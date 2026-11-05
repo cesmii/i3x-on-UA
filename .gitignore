@@ -1,0 +1,46 @@
+# --- dependencies (npm workspaces: root + factory/, server/, gateway/) ---
+node_modules/
+
+# --- build / scratch output ---
+# spike, scratch NodeSets, server log (no trailing comments: git treats them as part of the pattern)
+factory/out/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.cache/
+
+# --- secrets: OPC UA PKI (server private key + trusted client certs) and env files ---
+server/pki/
+**/pki/
+*.pem
+*.key
+*.der
+*.pfx
+.env
+.env.*
+!.env.example
+
+# --- Python (tools/) ---
+__pycache__/
+*.py[cod]
+
+# --- logs ---
+*.log
+npm-debug.log*
+
+# --- editor / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- local Claude Code settings (shared settings in .claude/settings.json stay tracked) ---
+.claude/settings.local.json
+
+# NOTE: tracked on purpose
+#   package-lock.json                 reproducible installs (pinned versions)
+#   nodesets/factory/*.NodeSet2.xml   generated, but deterministic and the published model artifact
+#   nodesets/vendor/, docs/acme/      Acme profile releases (CESMII-owned)
+compare/logs/

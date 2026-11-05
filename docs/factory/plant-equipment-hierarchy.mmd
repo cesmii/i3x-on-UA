@@ -1,0 +1,15 @@
+flowchart TD
+  ENT["Enterprise: Demo Beverage Co."] --> SITE["Site: Plant 1"]
+  SITE --> A100["Area: Water Treatment"]
+  SITE --> A200["Area: Syrup Room"]
+  SITE --> A300["Area: Blending & Carbonation"]
+  SITE --> A400["ProductionLine: Bottling Line 1"]
+  SITE -.-> A500["ProductionLine: Bottling Line 2 (future)"]
+  SITE --> A900["Area: Utilities"]
+
+  A100 --> U1["Units: T-101, F-101, RO-101, T-102"]
+  A100 --> P1["Pumps: P-101, P-102 (OPC 40223)"]
+  A200 --> U2["Units: SD-201, T-201, T-202 (Acme)<br/>Pumps: P-201, P-202, P-203"]
+  A300 --> U3["Units: DA-301, BL-301, HX-301, CB-301, T-301"]
+  A400 --> M4["WorkCells: FL-401 … PZ-405 (Machinery + PackML)"]
+  U1 --> I1["ControlModules: LT/FT/TT/PT/CT transmitters, valves (PA-DIM)"]

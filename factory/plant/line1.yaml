@@ -1,0 +1,367 @@
+# Virtual Beverage Plant, Line 1 (healthy baseline).
+# Source of truth for the generated OPC UA instance model. Design: docs/factory/PLANT_DESIGN.md (signed off 2026-11-05).
+# All vendors are fictitious; URIs use the reserved .example TLD.
+
+namespace: https://cesmii.net/i3x-demo/BeverageFactory/
+enterprise: { id: DemoBeverageCo, name: Demo Beverage Co. }
+site: { id: Plant1, name: Plant 1 }
+
+# EngineeringUnits: UNECE Rec 20 common codes. Codes marked * are not in node-opcua's
+# standardUnits table and were taken from Rec 20 directly (verify in review).
+units:
+  m:     { code: MTR, symbol: m, name: metre }
+  m3:    { code: MTQ, symbol: m³, name: cubic metre }
+  m3/h:  { code: MQH, symbol: m³/h, name: cubic metre per hour }
+  "%":   { code: P1, symbol: "%", name: percent }
+  degC:  { code: CEL, symbol: °C, name: degree Celsius }
+  bar:   { code: BAR, symbol: bar, name: bar }
+  uS/cm: { code: G42, symbol: µS/cm, name: microsiemens per centimetre }      # *
+  kg/m3: { code: KMQ, symbol: kg/m³, name: kilogram per cubic metre }        # *
+  mg/L:  { code: M1, symbol: mg/l, name: milligram per litre }               # *
+  g/L:   { code: GL, symbol: g/l, name: gram per litre }                     # *
+  kW:    { code: KWT, symbol: kW, name: kilowatt }
+  Hz:    { code: HTZ, symbol: Hz, name: hertz }
+  V:     { code: VLT, symbol: V, name: volt }
+  A:     { code: AMP, symbol: A, name: ampere }
+  rpm:   { code: RPM, symbol: r/min, name: revolutions per minute }
+  mm/s:  { code: C16, symbol: mm/s, name: millimetre per second }            # *
+  1/min: { code: C94, symbol: min⁻¹, name: reciprocal minute }               # *
+
+vendors:
+  acme:      { manufacturer: Acme Process Systems,  uri: https://acme.example }
+  globexpro: { manufacturer: Globex Process,        uri: https://globex.example/process }
+  globexpkg: { manufacturer: Globex Packaging,      uri: https://globex.example/packaging }
+  initech:   { manufacturer: Initech Instruments,   uri: https://initech.example/instruments }
+  initair:   { manufacturer: Initech Air,           uri: https://initech.example/air }
+  northwind: { manufacturer: Northwind Pumps,       uri: https://northwind.example }
+  vandelay:  { manufacturer: Vandelay Water Systems, uri: https://vandelay.example }
+  site:      { manufacturer: Demo Beverage Co. (site-built), uri: https://demo-beverage.example }
+
+# ISA-95 equipment classes (EquipmentClassType instances). level = ISA95EquipmentElementLevelEnum name.
+classes:
+  StorageTank:         { level: StorageUnit }
+  PressureTank:        { level: StorageUnit }
+  MixingTank:          { level: Unit }
+  Filter:              { level: Unit }
+  ReverseOsmosisUnit:  { level: Unit }
+  Deaerator:           { level: Unit }
+  Blender:             { level: Unit }
+  HeatExchanger:       { level: Unit }
+  Carbonator:          { level: Unit }
+  Pump:                { level: EquipmentModule }
+  Filler:              { level: WorkCell }
+  Capper:              { level: WorkCell }
+  Labeler:             { level: WorkCell }
+  CasePacker:          { level: WorkCell }
+  Palletizer:          { level: WorkCell }
+  CO2Supply:           { level: Unit }
+  CompressedAirSupply: { level: Unit }
+  ExternalConnection:  { level: Other }
+
+# designSpeed (packml): MachDesignSpeed in the machine's own INPUT units per minute: bottles for FL/CP/LB/CK, cases for PZ.
+# kind: isa95 | acmeTank | pump | packml
+# machinery: true → Machinery building blocks (Identification, MachineryItemState, MachineryOperationMode, Monitoring) as AddIns
+# ports: name → { category, direction: In|Out }
+# instruments: tag → { name, device?, signal?, variable?, unit?, range?, nominal? } (PA-DIM)
+#   device:   PA-DIM device type (default PADIMType)
+#   signal:   signal object type (default AnalogSignalType)
+#   variable: VariableType override for the signal's AnalogSignal (e.g. LevelMeasurementVariableType)
+#   kind: onoff | control → valve (TwoStateDiscreteControlSignalType | ControlSignalType)
+areas:
+  - id: WaterTreatment
+    name: Water Treatment
+    level: Area
+    equipment:
+      - tag: RawWaterMain
+        name: Raw Water Main (site boundary)
+        kind: isa95
+        class: ExternalConnection
+        ports: { WaterOut: { category: Water, direction: Out } }
+      - tag: T-101
+        name: Raw Water Tank
+        kind: isa95
+        class: StorageTank
+        vendor: site
+        properties: { Capacity: [50, m3], Height: [5, m] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+        instruments:
+          LT-101: { name: Raw Water Level, variable: LevelMeasurementVariableType, unit: m, range: [0, 5], nominal: 3.0 }
+          XV-101: { name: Raw Water Inlet Valve, kind: onoff }
+      - tag: P-101
+        name: Raw Water Pump
+        kind: pump
+        vendor: northwind
+        model: NW-CP80
+        year: 2019
+        ratings: { flow: [20, m3/h], head: [4, bar], power: [7.5, kW] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+      - tag: F-101
+        name: Carbon Filter
+        kind: isa95
+        class: Filter
+        machinery: true
+        vendor: vandelay
+        model: VW-ACF-20
+        year: 2019
+        properties: { RatedFlow: [20, m3/h] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+        instruments:
+          PDT-101: { name: Filter Differential Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 2], nominal: 0.4 }
+      - tag: RO-101
+        name: Reverse Osmosis Skid
+        kind: isa95
+        class: ReverseOsmosisUnit
+        machinery: true
+        vendor: vandelay
+        model: VW-RO-15
+        year: 2020
+        properties: { RatedPermeateFlow: [15, m3/h], Recovery: [75, "%"] }
+        ports:
+          WaterIn: { category: Water, direction: In }
+          PermeateOut: { category: Water, direction: Out }
+          RejectOut: { category: Water, direction: Out }
+        instruments:
+          PT-102: { name: RO Feed Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 20], nominal: 12 }
+          FT-101: { name: RO Permeate Flow, variable: ActualVolumeFlowRateVariableType, unit: m3/h, range: [0, 20], nominal: 11.1 }
+          CT-101: { name: Permeate Conductivity, device: ConductivityMeterType, signal: ConductivitySignalType, unit: uS/cm, range: [0, 100], nominal: 8 }
+      - tag: Drain
+        name: Drain (site boundary)
+        kind: isa95
+        class: ExternalConnection
+        ports: { WaterIn: { category: Water, direction: In } }
+      - tag: T-102
+        name: Treated Water Tank
+        kind: isa95
+        class: StorageTank
+        vendor: site
+        properties: { Capacity: [30, m3], Height: [4, m] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+        instruments:
+          LT-102: { name: Treated Water Level, variable: LevelMeasurementVariableType, unit: m, range: [0, 4], nominal: 2.5 }
+          TT-102: { name: Treated Water Temperature, variable: TemperatureMeasurementVariableType, unit: degC, range: [0, 40], nominal: 15 }
+      - tag: P-102
+        name: Treated Water Pump
+        kind: pump
+        vendor: northwind
+        model: NW-CP65
+        year: 2020
+        ratings: { flow: [15, m3/h], head: [4, bar], power: [5.5, kW] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+        instruments:
+          FT-102: { name: Treated Water Flow, variable: ActualVolumeFlowRateVariableType, unit: m3/h, range: [0, 20], nominal: 11.1 }
+
+  - id: SyrupRoom
+    name: Syrup Room
+    level: Area
+    equipment:
+      - tag: SugarSupply
+        name: Granulated Sugar Supply (site boundary)
+        kind: isa95
+        class: ExternalConnection
+        ports: { SugarOut: { category: Sugar, direction: Out } }
+      - tag: SD-201
+        name: Sugar Dissolver
+        kind: acmeTank
+        class: MixingTank
+        vendor: acme
+        model: AMT-5000H
+        year: 2018
+        properties: { Capacity: [5, m3] }
+        ports:
+          WaterIn: { category: Water, direction: In }
+          SugarIn: { category: Sugar, direction: In }
+          SyrupOut: { category: Syrup, direction: Out }
+        instruments:
+          DT-201: { name: Simple Syrup Density, variable: ActualDensityVariableType, unit: kg/m3, range: [1000, 1400], nominal: 1320 }
+      - tag: P-201
+        name: Dissolver Discharge Pump
+        kind: pump
+        vendor: northwind
+        model: NW-RL50
+        year: 2018
+        ratings: { flow: [6, m3/h], head: [6, bar], power: [4, kW] }
+        ports: { SyrupIn: { category: Syrup, direction: In }, SyrupOut: { category: Syrup, direction: Out } }
+      - tag: T-201
+        name: Simple Syrup Tank
+        kind: acmeTank
+        class: MixingTank
+        vendor: acme
+        model: AMT-15000
+        year: 2018
+        properties: { Capacity: [15, m3] }
+        ports: { SyrupIn: { category: Syrup, direction: In }, SyrupOut: { category: Syrup, direction: Out } }
+      - tag: P-202
+        name: Syrup Transfer Pump
+        kind: pump
+        vendor: northwind
+        model: NW-RL50
+        year: 2018
+        ratings: { flow: [6, m3/h], head: [6, bar], power: [4, kW] }
+        ports: { SyrupIn: { category: Syrup, direction: In }, SyrupOut: { category: Syrup, direction: Out } }
+      - tag: ConcentrateSupply
+        name: Flavor Concentrate Supply (site boundary)
+        kind: isa95
+        class: ExternalConnection
+        ports: { ConcentrateOut: { category: Concentrate, direction: Out } }
+      - tag: T-202
+        name: Final Syrup Tank
+        kind: acmeTank
+        class: MixingTank
+        vendor: acme
+        model: AMT-15000
+        year: 2021
+        properties: { Capacity: [15, m3] }
+        ports:
+          SyrupIn: { category: Syrup, direction: In }
+          ConcentrateIn: { category: Concentrate, direction: In }
+          SyrupOut: { category: Syrup, direction: Out }
+        instruments:
+          DT-202: { name: Final Syrup Density, variable: ActualDensityVariableType, unit: kg/m3, range: [1000, 1400], nominal: 1260 }
+          XV-202: { name: Concentrate Dosing Valve, kind: onoff }
+      - tag: P-203
+        name: Syrup Feed Pump
+        kind: pump
+        vendor: northwind
+        model: NW-RL40V
+        year: 2021
+        ratings: { flow: [3, m3/h], head: [6, bar], power: [2.2, kW] }
+        ports: { SyrupIn: { category: Syrup, direction: In }, SyrupOut: { category: Syrup, direction: Out } }
+
+  - id: BlendingCarbonation
+    name: Blending & Carbonation
+    level: Area
+    equipment:
+      - tag: DA-301
+        name: Deaerator
+        kind: isa95
+        class: Deaerator
+        machinery: true
+        vendor: globexpro
+        model: GX-DA12
+        year: 2017
+        properties: { RatedFlow: [12, m3/h] }
+        ports: { WaterIn: { category: Water, direction: In }, WaterOut: { category: Water, direction: Out } }
+        instruments:
+          AT-301: { name: Dissolved Oxygen, variable: AnalyticalMeasurementVariableType, unit: mg/L, range: [0, 2], nominal: 0.3 }
+          PT-303: { name: Deaerator Vacuum, variable: PressureMeasurementVariableType, unit: bar, range: [0, 1], nominal: 0.1 }
+      - tag: BL-301
+        name: Inline Blender
+        kind: isa95
+        class: Blender
+        machinery: true
+        vendor: globexpro
+        model: GX-BL15
+        year: 2017
+        properties: { RatedFlow: [15, m3/h] }
+        ports:
+          WaterIn: { category: Water, direction: In }
+          SyrupIn: { category: Syrup, direction: In }
+          BeverageOut: { category: Beverage, direction: Out }
+        instruments:
+          FT-301: { name: Blend Water Flow, variable: ActualVolumeFlowRateVariableType, unit: m3/h, range: [0, 15], nominal: 10.0 }
+          FT-302: { name: Blend Syrup Flow, variable: ActualVolumeFlowRateVariableType, unit: m3/h, range: [0, 4], nominal: 2.0 }
+          DT-301: { name: Beverage Density, variable: ActualDensityVariableType, unit: kg/m3, range: [990, 1100], nominal: 1042 }
+          FCV-301: { name: Water Ratio Control Valve, kind: control }
+          FCV-302: { name: Syrup Ratio Control Valve, kind: control }
+      - tag: HX-301
+        name: Product Cooler
+        kind: isa95
+        class: HeatExchanger
+        vendor: globexpro
+        model: GX-PHE15
+        year: 2017
+        properties: { RatedFlow: [15, m3/h] }
+        ports: { BeverageIn: { category: Beverage, direction: In }, BeverageOut: { category: Beverage, direction: Out } }
+        instruments:
+          TT-301: { name: Cooler Outlet Temperature, variable: TemperatureMeasurementVariableType, unit: degC, range: [0, 20], nominal: 3.0 }
+      - tag: CB-301
+        name: Carbonator
+        kind: isa95
+        class: Carbonator
+        machinery: true
+        vendor: globexpro
+        model: GX-CB15
+        year: 2017
+        properties: { RatedFlow: [15, m3/h] }
+        ports:
+          BeverageIn: { category: Beverage, direction: In }
+          CO2In: { category: CO2, direction: In }
+          BeverageOut: { category: Beverage, direction: Out }
+        instruments:
+          AT-302: { name: CO2 Content, variable: AnalyticalMeasurementVariableType, unit: g/L, range: [0, 10], nominal: 7.3 }
+          PT-304: { name: Carbonator Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 8], nominal: 4.0 }
+          PCV-311: { name: CO2 Pressure Control Valve, kind: control }
+      - tag: T-301
+        name: Product Buffer Tank
+        kind: isa95
+        class: PressureTank
+        vendor: site
+        properties: { Capacity: [10, m3] }
+        ports: { BeverageIn: { category: Beverage, direction: In }, BeverageOut: { category: Beverage, direction: Out } }
+        instruments:
+          LT-301: { name: Buffer Level, variable: LevelMeasurementVariableType, unit: "%", range: [0, 100], nominal: 60 }
+          PT-305: { name: Buffer Head Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 6], nominal: 3.5 }
+          TT-305: { name: Buffer Product Temperature, variable: TemperatureMeasurementVariableType, unit: degC, range: [0, 10], nominal: 3.0 }
+          XV-301: { name: Buffer Outlet Valve, kind: onoff }
+
+  - id: BottlingLine1
+    name: Bottling Line 1
+    level: ProductionLine
+    equipment:
+      - { tag: FL-401, name: Filler,      kind: packml, class: Filler,     vendor: globexpkg, model: GX-F60,  year: 2016, designSpeed: 400,
+          ports: { BeverageIn: { category: Beverage, direction: In } } }
+      - { tag: CP-402, name: Capper,      kind: packml, class: Capper,     vendor: globexpkg, model: GX-C24,  year: 2016, designSpeed: 400 }
+      - { tag: LB-403, name: Labeler,     kind: packml, class: Labeler,    vendor: globexpkg, model: GX-L440, year: 2019, designSpeed: 440 }
+      - { tag: CK-404, name: Case Packer, kind: packml, class: CasePacker, vendor: globexpkg, model: GX-CP20, year: 2016, designSpeed: 480 }
+      - { tag: PZ-405, name: Palletizer,  kind: packml, class: Palletizer, vendor: globexpkg, model: GX-PZ25, year: 2022, designSpeed: 25 }
+
+  - id: Utilities
+    name: Utilities
+    level: Area
+    equipment:
+      - tag: CO2-901
+        name: CO2 Supply
+        kind: isa95
+        class: CO2Supply
+        vendor: site
+        properties: { Capacity: [30, m3] }
+        ports: { CO2Out: { category: CO2, direction: Out } }
+        instruments:
+          LT-901: { name: CO2 Inventory, variable: LevelMeasurementVariableType, unit: "%", range: [0, 100], nominal: 70 }
+          PT-901: { name: CO2 Supply Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 20], nominal: 12 }
+      - tag: AC-902
+        name: Compressed Air
+        kind: isa95
+        class: CompressedAirSupply
+        vendor: initair
+        model: IA-SC75
+        year: 2015
+        instruments:
+          PT-902: { name: Air Header Pressure, variable: PressureMeasurementVariableType, unit: bar, range: [0, 10], nominal: 7.0 }
+
+# Material flow: "<tag>.<port>" Out → "<tag>.<port>" In (DI ConnectsTo; decision P1-b).
+# Packaging-line conveyor links (design links 24–29) are deferred.
+links:
+  - [RawWaterMain.WaterOut, T-101.WaterIn]
+  - [T-101.WaterOut, P-101.WaterIn]
+  - [P-101.WaterOut, F-101.WaterIn]
+  - [F-101.WaterOut, RO-101.WaterIn]
+  - [RO-101.PermeateOut, T-102.WaterIn]
+  - [RO-101.RejectOut, Drain.WaterIn]
+  - [T-102.WaterOut, P-102.WaterIn]
+  - [P-102.WaterOut, SD-201.WaterIn]
+  - [P-102.WaterOut, DA-301.WaterIn]
+  - [SugarSupply.SugarOut, SD-201.SugarIn]
+  - [SD-201.SyrupOut, P-201.SyrupIn]
+  - [P-201.SyrupOut, T-201.SyrupIn]
+  - [T-201.SyrupOut, P-202.SyrupIn]
+  - [P-202.SyrupOut, T-202.SyrupIn]
+  - [ConcentrateSupply.ConcentrateOut, T-202.ConcentrateIn]
+  - [T-202.SyrupOut, P-203.SyrupIn]
+  - [P-203.SyrupOut, BL-301.SyrupIn]
+  - [DA-301.WaterOut, BL-301.WaterIn]
+  - [BL-301.BeverageOut, HX-301.BeverageIn]
+  - [HX-301.BeverageOut, CB-301.BeverageIn]
+  - [CO2-901.CO2Out, CB-301.CO2In]
+  - [CB-301.BeverageOut, T-301.BeverageIn]
+  - [T-301.BeverageOut, FL-401.BeverageIn]

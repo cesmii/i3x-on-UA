@@ -1,0 +1,19 @@
+{
+  "name": "i3x-on-opc",
+  "private": true,
+  "description": "Virtual beverage factory: standards-based OPC UA model + generic OPC UA \u2192 i3X gateway",
+  "workspaces": [
+    "factory",
+    "server",
+    "gateway",
+    "compare"
+  ],
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "compare": "npm run compare -w compare --"
+  }
+}

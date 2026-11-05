@@ -1,0 +1,66 @@
+# Gateway switch (decision D9): run OUR OPC UA → i3X gateway, the WG member's, or both, against the same plant.
+#
+#   npm run compare                 # start the plant (if needed), the enabled gateways and the front door
+#   npm run compare -- status       # health + address-space counts per gateway
+#   npm run compare -- conformance  # i3X conformance suite against each gateway, side by side
+#
+# Front door (http://localhost:8080):
+#   /v1/…        → the ACTIVE gateway (edit `active` below while running: it re-routes live)
+#   /cesmii/v1/… → always "cesmii";   /i3x2ua/v1/… → always "i3x2ua"
+#   /            → status page;     /_switch/<name> → change the active gateway at runtime (not saved)
+# Side by side: both gateways run at once on their own ports (cesmii :8081, i3x2ua :8082), directly or via
+# /cesmii/v1 and /i3x2ua/v1. Add both to i3X Explorer. Or use /v1 alone and flip `active` between them.
+
+active: cesmii
+
+frontDoor:
+  port: 8080
+
+# Fairness rule: each gateway runs with its own documented defaults; only connection settings are changed.
+
+# The OPC UA server every gateway reads (our plant simulation). The launcher starts it unless something
+# already listens on the port. Containers reach the host through host.docker.internal.
+opcua:
+  endpoint: opc.tcp://localhost:4840/UA/BeverageFactory
+  containerEndpoint: opc.tcp://host.docker.internal:4840/UA/BeverageFactory
+  start: node --import tsx server/src/main.ts      # same as `npm start -w server`, without wrapper processes
+
+conformance:
+  suite: ~/Projects/API/conformance-tests      # cesmii/i3X conformance-tests (run only, never modified)
+  timeoutMs: 30000
+
+gateways:
+  cesmii:
+    enabled: true
+    label: "CESMII — i3x-on-OPC gateway (TypeScript/node-opcua)"
+    docs: docs/gateway/MAPPING.md
+    kind: process
+    command: node --import tsx gateway/src/main.ts   # same as `npm start -w gateway`
+    port: 8081                       # change the port here only
+    env:
+      GATEWAY_PORT: ${port}
+      OPCUA_ENDPOINT: ${opcua.endpoint}
+      # interpretation switches, e.g. I3X_QUALITY: base · I3X_ENUMS: name · I3X_COMPONENTS_SHAPE: nested
+
+  i3x2ua:
+    enabled: true
+    label: "Andreas Heine — i3x2ua (Python/FastAPI/asyncua)"
+    docs: https://github.com/AndreasHeine/i3x2ua/blob/master/docs/OPCUA_I3X_MAPPING_PROFILE.md
+    license: AGPL-3.0-or-later (run as an unmodified upstream container; no code is copied into this repo)
+    kind: docker
+    image: ghcr.io/andreasheine/i3x2ua:1.16.2      # pinned release (2026-11-04); bump deliberately
+    containerName: i3x2ua-compare
+    containerPort: 8000                # inside the container (fixed by his image)
+    port: 8082                         # on this machine: change here only
+    env:
+      I3X_OPCUA_ENDPOINT: ${opcua.containerEndpoint}
+      I3X_OPCUA_SECURITY_MODE: None              # same footing as "cesmii" (anonymous, no security, local dev)
+      I3X_MODEL_PRELOAD_ON_STARTUP: "true"
+      I3X_MODEL_PRELOAD_BLOCKING: "true"         # /v1/info answers only once the model is built
+      I3X_SUBSCRIPTION_INTERVAL_SECONDS: "1"     # his compose default
+      # Writes: his documented default (.env-example) is off. With "1" against this plant (read-only measurements,
+      # no HistoryUpdate) the suite reports UPD-01/03/04 failures: his gateway forwards a write-back of an
+      # unchanged value to OPC UA (→ BadNotWritable, 403), while cesmii treats unchanged attributes as no-ops.
+      I3X_ENABLE_WRITES: "0"
+      I3X_ENABLE_MCP: "0"
+      I3X_LOG_LEVEL: WARN

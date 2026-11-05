@@ -1,0 +1,15 @@
+{
+  "name": "@i3x-on-opc/server",
+  "private": true,
+  "type": "module",
+  "description": "node-opcua server for the virtual beverage factory (standard + vendor + generated NodeSets)",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p .",
+    "sim:check": "tsx src/sim/check.ts"
+  },
+  "dependencies": {
+    "node-opcua": "2.187.10",
+    "yaml": "2.9.1"
+  }
+}

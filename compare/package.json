@@ -1,0 +1,13 @@
+{
+  "name": "@i3x-on-opc/compare",
+  "private": true,
+  "type": "module",
+  "description": "Gateway switch: run our OPC UA \u2192 i3X gateway and the WG member's side by side (decision D9)",
+  "scripts": {
+    "compare": "node --import tsx src/launch.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
+  }
+}

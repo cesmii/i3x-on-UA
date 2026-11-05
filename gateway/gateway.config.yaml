@@ -1,0 +1,29 @@
+# OPC UA → i3X gateway ("cesmii", the CESMII interpretation). Every key can be overridden by an env var (shown in brackets).
+# Interpretation switches are documented in docs/gateway/MAPPING.md (marked [switch]).
+
+opcua:
+  endpoint: opc.tcp://localhost:4840/UA/BeverageFactory   # [OPCUA_ENDPOINT]
+  # securityMode / user credentials: anonymous + None for local development
+
+http:
+  port: 8081            # [GATEWAY_PORT]
+  host: 0.0.0.0         # [GATEWAY_HOST]
+  basePath: ""          # [GATEWAY_BASE_PATH] e.g. "/cesmii" when sharing one Nginx host with another gateway
+  serverName: i3X-on-OPC gateway (CESMII)
+
+interpretation:
+  includeCoreInfrastructure: false   # project ns0 nodes under Objects (Server, Aliases, …)
+  typeIds: short                     # short = "<ns>:<BrowseName>" | nsu = full NodeId
+  schemaInheritance: resolved        # resolved = flattened properties | allOf = allOf + $ref to supertype
+  int64: string                      # string | number
+  enums: number                      # number (+ oneOf titles in schema) | name
+  relationshipsShape: arrays         # arrays | mixed (single-valued edges as a string)
+  infoEnvelope: wrapped              # wrapped = {success, result} (OpenAPI) | bare (IG example)
+  synthesizeFlow: true               # FlowsTo/FedBy from Pumps ports joined by ConnectsTo
+  quality: detailed                  # detailed = OPC UA status name ("Bad_NotConnected") | base = Good/GoodNoData/Bad/Uncertain only
+  componentsShape: flat              # flat = all composition descendants in one `components` map | nested = components inside components
+
+subscriptions:
+  ttlSeconds: 300       # delete a subscription after this long without /sync or an open stream
+  queueLimit: 10000     # updates per subscription before the oldest are dropped (→ 206 on /sync)
+  samplingMs: 250       # OPC UA MonitoredItem sampling interval

@@ -1,0 +1,50 @@
+/** Load the standard + vendor NodeSets the plant is built on. */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { AddressSpace, NamespaceOptions } from "node-opcua-address-space";
+import { generateAddressSpace } from "node-opcua-address-space/nodeJS.js";
+
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const std = (f: string) => path.join(ROOT, "nodesets/standard", f);
+
+/** Dependency order is resolved by the loader; listed here for readability. Weihenstephan is deliberately excluded. */
+export const BASE_NODESETS = [
+  std("OPC-UA-Core-Model.NodeSet2.xml"),
+  std("Unified-Architecture-Device-Model.NodeSet2.xml"),
+  std("Industrial-Automation-Basics.NodeSet2.xml"),
+  std("IRDI-Dictionary.NodeSet2.xml"),
+  std("Process-Automation-Devices-PADIM.NodeSet2.xml"),
+  std("Machinery-Basic-Building-Blocks.NodeSet2.xml"),
+  std("Machinery-Process-Values.NodeSet2.xml"),
+  std("PackML-Packaging-Control.NodeSet2.xml"),
+  std("Opc.Ua.Pumps.NodeSet2.xml"),
+  std("Opc.ISA95.NodeSet2.xml"),
+  path.join(ROOT, "nodesets/vendor/Acme-Mix-Tank-Profile.NodeSet2.xml"),
+];
+
+export const NSU = {
+  UA: "http://opcfoundation.org/UA/",
+  DI: "http://opcfoundation.org/UA/DI/",
+  IA: "http://opcfoundation.org/UA/IA/",
+  MACHINERY: "http://opcfoundation.org/UA/Machinery/",
+  PV: "http://opcfoundation.org/UA/Machinery/ProcessValues/",
+  PADIM: "http://opcfoundation.org/UA/PADIM/",
+  PACKML: "http://opcfoundation.org/UA/PackML/",
+  PUMPS: "http://opcfoundation.org/UA/Pumps/",
+  ISA95: "http://www.OPCFoundation.org/UA/2013/01/ISA95",
+  ACME: "https://cesmii.net/profiles/AcmeMixTank",
+  FACTORY: "https://cesmii.net/i3x-demo/BeverageFactory/",
+} as const;
+
+export async function loadBase(extra: string[] = []): Promise<AddressSpace> {
+  NamespaceOptions.nodeIdNameSeparator = "/";
+  const as = AddressSpace.create();
+  await generateAddressSpace(as, [...BASE_NODESETS, ...extra]);
+  return as;
+}
+
+export function nsIndex(as: AddressSpace, uri: string): number {
+  const i = as.getNamespaceIndex(uri);
+  if (i < 0) throw new Error(`namespace not loaded: ${uri}`);
+  return i;
+}
