@@ -6,7 +6,8 @@
     "factory",
     "server",
     "gateway",
-    "compare"
+    "compare",
+    "uns"
   ],
   "devDependencies": {
     "@types/node": "24.19.2",

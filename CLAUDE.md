@@ -49,9 +49,10 @@ These are working-group deliverables for the 12-month "i3X over OPC UA" workstre
   - It must stay **generic** (OPC UA services only; companion-spec logic only in `src/profiles/`, switchable) and **independent** of the other WG member's gateway (D9).
   - Conformance check: `cd ~/Projects/API/conformance-tests && node bin/i3x-test.js run http://localhost:8081/v1`. Run it only; don't modify that repo.
 - **`./start.sh`** (root): one-step start for macOS/Linux/WSL. It checks Node, runs `npm ci` if needed, copies `.env.example` → `.env` (sim settings + `I3X_*` switches, gitignored), generates the NodeSet if missing, checks Docker, then `npm run compare`. Also `./start.sh status|conformance`. It re-execs itself under bash when started from zsh/sh, and keeps to bash 3.2 features (macOS `/bin/bash`).
+- `uns/`: third comparison point, a **naive UNS-style i3X server**. `model.yaml` is hand-authored (asset tree, company types, flat JSON payloads, OPC UA tag map, Feeds/Supplies graph); `src/main.ts` polls the plant every second and serves i3X on :8083 (`/uns/v1`). Deliberately ignores OPC UA types and references; design notes and "shape it" ideas are in `uns/README.md`. Conformance: 1.0 Compatible.
 - `compare/`: the gateway switch (D9).
   - `compare/gateways.yaml` (`active:` is switched live) and `npm run compare [-- status|conformance]`.
-  - Front door on :8080: `/v1` → active, `/cesmii/v1` (ours, :8081), `/i3x2ua/v1` (:8082).
+  - Front door on :8080: `/v1` → active, `/cesmii/v1` (ours, :8081), `/i3x2ua/v1` (:8082), `/uns/v1` (:8083).
   - `i3x2ua` = Andreas Heine's **i3x2ua** (AGPL), run as an unmodified pinned container (`ghcr.io/andreasheine/i3x2ua:1.16.2`, port 8082). His mapping profile: `docs/OPCUA_I3X_MAPPING_PROFILE.md` in that repo. Never copy his code into this repo.
   - Fairness rule: each gateway runs with its own documented defaults; only connection settings change. Docker Desktop is needed for `i3x2ua`.
   - Lifecycle: one Ctrl-C stops all it started. Keep launcher-managed processes free of npm/tsx wrappers (`node --import tsx …`): wrappers forward a second SIGINT and tsx force-kills its child on the second one, which orphaned processes before.

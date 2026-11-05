@@ -8,8 +8,8 @@
 #   /v1/…        → the ACTIVE gateway (edit `active` below while running: it re-routes live)
 #   /cesmii/v1/… → always "cesmii";   /i3x2ua/v1/… → always "i3x2ua"
 #   /            → status page;     /_switch/<name> → change the active gateway at runtime (not saved)
-# Side by side: both gateways run at once on their own ports (cesmii :8081, i3x2ua :8082), directly or via
-# /cesmii/v1 and /i3x2ua/v1. Add both to i3X Explorer. Or use /v1 alone and flip `active` between them.
+# Side by side: all gateways run at once on their own ports (cesmii :8081, i3x2ua :8082, uns :8083), directly or via
+# /cesmii/v1, /i3x2ua/v1 and /uns/v1. Add both to i3X Explorer. Or use /v1 alone and flip `active` between them.
 
 active: cesmii
 
@@ -64,3 +64,14 @@ gateways:
       I3X_ENABLE_WRITES: "0"
       I3X_ENABLE_MCP: "0"
       I3X_LOG_LEVEL: WARN
+
+  uns:
+    enabled: true
+    label: "UNS-style — hand-authored asset model over a polling connector (naive about OPC UA)"
+    docs: uns/README.md
+    kind: process
+    command: node --import tsx uns/src/main.ts      # same as `npm start -w uns`
+    port: 8083                         # change the port here only
+    env:
+      UNS_PORT: ${port}
+      OPCUA_ENDPOINT: ${opcua.endpoint}

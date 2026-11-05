@@ -5,6 +5,7 @@ Runs **our** gateway and the **WG member's** gateway side by side against the sa
 | Name | Implementation | Interpretation |
 |---|---|---|
 | `cesmii` | `gateway/`: ours (TypeScript, node-opcua) | `docs/gateway/MAPPING.md` |
+| `uns` | `uns/`: a naive, hand-authored UNS-style asset model over a polling connector (TypeScript) | `uns/README.md` |
 | `i3x2ua` | [i3x2ua](https://github.com/AndreasHeine/i3x2ua) by Andreas Heine (Python, FastAPI, asyncua), run as his **unmodified published container** `ghcr.io/andreasheine/i3x2ua:1.16.2` | [OPCUA_I3X_MAPPING_PROFILE.md](https://github.com/AndreasHeine/i3x2ua/blob/master/docs/OPCUA_I3X_MAPPING_PROFILE.md) |
 
 (`AndreasHeine/SampleServer-node-opcua` is his OPC UA *sample server*, not the gateway; here every gateway reads our beverage-plant server instead.)

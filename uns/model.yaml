@@ -1,0 +1,288 @@
+# "UNS-style" i3X model of the beverage plant: hand-authored, the way an integrator who knows MQTT/UNS
+# and only loosely knows OPC UA companion specs would build it. No ISA-95 levels, no Machinery folders,
+# no ports or field devices as objects: just the asset tree, flat JSON payloads, and a tag map that a
+# connector polls from the plant's OPC UA server (paths picked by browsing it in UaExpert).
+#
+# Tag paths are relative to the plant namespace below; "{tag}" is replaced by the asset's tag.
+# A field is either "<path>" or { path, as } where `as` is one of:
+#   number (default) · text (LocalizedText → string) · bool · count (first PackML count) ·
+#   message / code (PackML alarm) · enum (map: {1: Production, …}) · equals: <text> (→ bool)
+# or { derive: <name>(<field>, …) } for values computed in the connector.
+
+namespace: https://demo-beverage.example/uns
+plantNamespace: https://cesmii.net/i3x-demo/BeverageFactory/
+pollMs: 1000
+
+types:
+  Enterprise: { description: Company, schema: { type: object, properties: { name: { type: string } } } }
+  Site:       { description: Manufacturing site, schema: { type: object, properties: { name: { type: string }, timezone: { type: string } } } }
+  Area:       { description: Plant area, schema: { type: object, properties: { name: { type: string } } } }
+  Line:       { description: Packaging line, schema: { type: object, properties: { name: { type: string }, product: { type: string } } } }
+
+  Nameplate:
+    description: Asset nameplate data
+    schema:
+      type: object
+      properties:
+        manufacturer: { type: string }
+        model: { type: string }
+        serial_number: { type: string }
+        year_built: { type: integer }
+    tags:
+      manufacturer: { path: "{tag}/Identification/Manufacturer", as: text }
+      model: { path: "{tag}/Identification/Model", as: text }
+      serial_number: { path: "{tag}/Identification/SerialNumber", as: text }
+      year_built: "{tag}/Identification/YearOfConstruction"
+
+  Tank:
+    description: Storage or buffer tank
+    schema:
+      type: object
+      properties:
+        level_m: { type: number }
+        level_pct: { type: number }
+        temperature_c: { type: number }
+        pressure_bar: { type: number }
+        inlet_valve_open: { type: boolean }
+        outlet_valve_open: { type: boolean }
+
+  MixingTank:
+    description: Agitated mixing tank (Acme skid)
+    schema:
+      type: object
+      properties:
+        level_m: { type: number }
+        level_pct: { type: number }
+        temperature_c: { type: number }
+        density_kg_m3: { type: number }
+        brix: { type: number }
+        agitator_running: { type: boolean }
+        agitator_speed_rpm: { type: number }
+        status: { type: string }
+        heat_done: { type: boolean }
+        mix_done: { type: boolean }
+        concentrate_valve_open: { type: boolean }
+    tags:
+      level_m: "{tag}/Monitoring/Process/Tank/Level/AnalogSignal"
+      level_pct: "{tag}/Monitoring/Process/Tank/LevelPercent/AnalogSignal"
+      temperature_c: "{tag}/Monitoring/Process/Tank/Temperature/AnalogSignal"
+      agitator_running: { path: "{tag}/Component/Motor/Running", as: bool }
+      agitator_speed_rpm: "{tag}/Component/Motor/Speed/AnalogSignal"
+      status: "{tag}/Monitoring/Status/MachineryItemState/CurrentState"
+      heat_done: { path: "{tag}/Monitoring/Process/Phases/HeatDone", as: bool }
+      mix_done: { path: "{tag}/Monitoring/Process/Phases/MixDone", as: bool }
+
+  Pump:
+    description: Centrifugal or positive-displacement pump
+    schema:
+      type: object
+      properties:
+        running: { type: boolean }
+        speed_rpm: { type: number }
+        flow_m3h: { type: number }
+        power_kw: { type: number }
+        diff_pressure_bar: { type: number }
+        fluid_temp_c: { type: number }
+    tags:
+      speed_rpm: "{tag}/Operational/Measurements/Speed"
+      power_kw: "{tag}/Operational/Measurements/PumpPowerInput"
+      diff_pressure_bar: "{tag}/Operational/Measurements/DifferentialPressure"
+      fluid_temp_c: "{tag}/Operational/Measurements/FluidTemperature"
+      running: { derive: "running(speed_rpm)" }
+
+  Filter:
+    description: Carbon filter
+    schema: { type: object, properties: { dp_bar: { type: number }, status: { type: string }, mode: { type: string } } }
+    tags:
+      status: { path: "{tag}/MachineryItemState/CurrentState", as: text }
+      mode: { path: "{tag}/MachineryOperationMode/CurrentState", as: text }
+
+  ROUnit:
+    description: Reverse osmosis skid
+    schema:
+      type: object
+      properties:
+        running: { type: boolean }
+        feed_pressure_bar: { type: number }
+        permeate_flow_m3h: { type: number }
+        conductivity_us_cm: { type: number }
+    tags:
+      running: { path: "{tag}/MachineryItemState/CurrentState", as: { equals: Executing } }
+
+  Deaerator:
+    description: Vacuum deaerator
+    schema: { type: object, properties: { running: { type: boolean }, dissolved_o2_mgl: { type: number }, vacuum_bar: { type: number } } }
+    tags:
+      running: { path: "{tag}/MachineryItemState/CurrentState", as: { equals: Executing } }
+
+  Blender:
+    description: Inline syrup/water blender
+    schema:
+      type: object
+      properties:
+        running: { type: boolean }
+        water_flow_m3h: { type: number }
+        syrup_flow_m3h: { type: number }
+        ratio: { type: number, description: water:syrup }
+        density_kg_m3: { type: number }
+        brix: { type: number }
+        water_valve_pct: { type: number }
+        syrup_valve_pct: { type: number }
+    tags:
+      running: { path: "{tag}/MachineryItemState/CurrentState", as: { equals: Executing } }
+      ratio: { derive: "ratio(water_flow_m3h, syrup_flow_m3h)" }
+      brix: { derive: "brix(density_kg_m3)" }
+
+  Cooler:
+    description: Plate heat exchanger
+    schema: { type: object, properties: { outlet_temp_c: { type: number } } }
+
+  Carbonator:
+    description: CO2 carbonator
+    schema:
+      type: object
+      properties:
+        running: { type: boolean }
+        co2_gl: { type: number }
+        co2_volumes: { type: number }
+        pressure_bar: { type: number }
+        co2_valve_pct: { type: number }
+    tags:
+      running: { path: "{tag}/MachineryItemState/CurrentState", as: { equals: Executing } }
+      co2_volumes: { derive: "co2volumes(co2_gl)" }
+
+  PackagingMachine:
+    description: Filler, capper, labeler, case packer or palletizer (PackML)
+    schema:
+      type: object
+      properties:
+        state: { type: string }
+        running: { type: boolean }
+        mode: { type: string }
+        speed: { type: number }
+        speed_setpoint: { type: number }
+        good_count: { type: integer }
+        reject_count: { type: integer }
+        stop_code: { type: integer }
+        stop_reason: { type: string }
+        blocked: { type: boolean }
+        starved: { type: boolean }
+    tags:
+      state: { path: "{tag}/BaseStateMachine/MachineState/ExecuteState/CurrentState", as: text, fallback: { path: "{tag}/BaseStateMachine/MachineState/CurrentState", as: text } }
+      running: { derive: "equals(state, Execute)" }
+      mode: { path: "{tag}/Status/UnitModeCurrent", as: { enum: { 1: Production, 2: Maintenance, 3: Manual } } }
+      speed: "{tag}/Status/CurMachSpeed"
+      speed_setpoint: "{tag}/Status/MachSpeed"
+      good_count: { path: "{tag}/Admin/ProdProcessedCount", as: count }
+      reject_count: { path: "{tag}/Admin/ProdDefectiveCount", as: count }
+      stop_code: { path: "{tag}/Admin/StopReason", as: code }
+      stop_reason: { path: "{tag}/Admin/StopReason", as: message }
+      blocked: { path: "{tag}/Status/EquipmentBlocked", as: bool }
+      starved: { path: "{tag}/Status/EquipmentStarved", as: bool }
+
+  CO2Supply:
+    description: Bulk CO2 tank
+    schema: { type: object, properties: { level_pct: { type: number }, pressure_bar: { type: number } } }
+
+  AirCompressor:
+    description: Compressed air supply
+    schema: { type: object, properties: { header_pressure_bar: { type: number } } }
+
+# The tree. id = topic-style path segment; tag = the plant tag the connector reads from; nameplate: true adds
+# a <asset>/nameplate composition child. `tags` here are asset-specific (instrument tags differ per asset).
+enterprise: { id: demobev, name: Demo Beverage Co., value: { name: Demo Beverage Co. } }
+site: { id: plant1, name: Plant 1, value: { name: Plant 1, timezone: America/New_York } }
+areas:
+  - id: water-treatment
+    name: Water Treatment
+    type: Area
+    assets:
+      - { id: raw-water-tank, name: Raw Water Tank, type: Tank, tag: T-101,
+          tags: { level_m: LT-101/SignalSet/Level/AnalogSignal, inlet_valve_open: { path: XV-101/SignalSet/Valve/ControlSignal, as: bool } } }
+      - { id: raw-water-pump, name: Raw Water Pump, type: Pump, tag: P-101, nameplate: true }
+      - { id: carbon-filter, name: Carbon Filter, type: Filter, tag: F-101, nameplate: true, tags: { dp_bar: PDT-101/SignalSet/Pressure/AnalogSignal } }
+      - { id: ro-unit, name: Reverse Osmosis, type: ROUnit, tag: RO-101, nameplate: true,
+          tags: { feed_pressure_bar: PT-102/SignalSet/Pressure/AnalogSignal, permeate_flow_m3h: FT-101/SignalSet/Flow/AnalogSignal,
+                  conductivity_us_cm: CT-101/SignalSet/Conductivity/AnalogSignal } }
+      - { id: treated-water-tank, name: Treated Water Tank, type: Tank, tag: T-102,
+          tags: { level_m: LT-102/SignalSet/Level/AnalogSignal, temperature_c: TT-102/SignalSet/Temperature/AnalogSignal } }
+      - { id: treated-water-pump, name: Treated Water Pump, type: Pump, tag: P-102, nameplate: true, tags: { flow_m3h: FT-102/SignalSet/Flow/AnalogSignal } }
+  - id: syrup-room
+    name: Syrup Room
+    type: Area
+    assets:
+      - { id: sugar-dissolver, name: Sugar Dissolver, type: MixingTank, tag: SD-201, nameplate: true,
+          tags: { density_kg_m3: DT-201/SignalSet/Density/AnalogSignal, brix: { derive: "brix(density_kg_m3)" } } }
+      - { id: dissolver-pump, name: Dissolver Pump, type: Pump, tag: P-201, nameplate: true }
+      - { id: simple-syrup-tank, name: Simple Syrup Tank, type: MixingTank, tag: T-201, nameplate: true }
+      - { id: syrup-transfer-pump, name: Syrup Transfer Pump, type: Pump, tag: P-202, nameplate: true }
+      - { id: final-syrup-tank, name: Final Syrup Tank, type: MixingTank, tag: T-202, nameplate: true,
+          tags: { density_kg_m3: DT-202/SignalSet/Density/AnalogSignal, brix: { derive: "brix(density_kg_m3)" },
+                  concentrate_valve_open: { path: XV-202/SignalSet/Valve/ControlSignal, as: bool } } }
+      - { id: syrup-feed-pump, name: Syrup Feed Pump, type: Pump, tag: P-203, nameplate: true }
+  - id: blending
+    name: Blending & Carbonation
+    type: Area
+    assets:
+      - { id: deaerator, name: Deaerator, type: Deaerator, tag: DA-301, nameplate: true,
+          tags: { dissolved_o2_mgl: AT-301/SignalSet/Concentration/AnalogSignal, vacuum_bar: PT-303/SignalSet/Pressure/AnalogSignal } }
+      - { id: blender, name: Blender, type: Blender, tag: BL-301, nameplate: true,
+          tags: { water_flow_m3h: FT-301/SignalSet/Flow/AnalogSignal, syrup_flow_m3h: FT-302/SignalSet/Flow/AnalogSignal,
+                  density_kg_m3: DT-301/SignalSet/Density/AnalogSignal, water_valve_pct: FCV-301/SignalSet/Valve/ControlSignal,
+                  syrup_valve_pct: FCV-302/SignalSet/Valve/ControlSignal } }
+      - { id: product-cooler, name: Product Cooler, type: Cooler, tag: HX-301, tags: { outlet_temp_c: TT-301/SignalSet/Temperature/AnalogSignal } }
+      - { id: carbonator, name: Carbonator, type: Carbonator, tag: CB-301, nameplate: true,
+          tags: { co2_gl: AT-302/SignalSet/Concentration/AnalogSignal, pressure_bar: PT-304/SignalSet/Pressure/AnalogSignal,
+                  co2_valve_pct: PCV-311/SignalSet/Valve/ControlSignal } }
+      - { id: buffer-tank, name: Buffer Tank, type: Tank, tag: T-301,
+          tags: { level_pct: LT-301/SignalSet/Level/AnalogSignal, pressure_bar: PT-305/SignalSet/Pressure/AnalogSignal,
+                  temperature_c: TT-305/SignalSet/Temperature/AnalogSignal, outlet_valve_open: { path: XV-301/SignalSet/Valve/ControlSignal, as: bool } } }
+  - id: line1
+    name: Bottling Line 1
+    type: Line
+    value: { name: Bottling Line 1, product: Cola 500 mL PET }
+    assets:
+      - { id: filler, name: Filler, type: PackagingMachine, tag: FL-401, nameplate: true }
+      - { id: capper, name: Capper, type: PackagingMachine, tag: CP-402, nameplate: true }
+      - { id: labeler, name: Labeler, type: PackagingMachine, tag: LB-403, nameplate: true }
+      - { id: case-packer, name: Case Packer, type: PackagingMachine, tag: CK-404, nameplate: true }
+      - { id: palletizer, name: Palletizer, type: PackagingMachine, tag: PZ-405, nameplate: true }
+  - id: utilities
+    name: Utilities
+    type: Area
+    assets:
+      - { id: co2-tank, name: CO2 Tank, type: CO2Supply, tag: CO2-901,
+          tags: { level_pct: LT-901/SignalSet/Level/AnalogSignal, pressure_bar: PT-901/SignalSet/Pressure/AnalogSignal } }
+      - { id: compressed-air, name: Compressed Air, type: AirCompressor, tag: AC-902, tags: { header_pressure_bar: PT-902/SignalSet/Pressure/AnalogSignal } }
+
+# Graph relationships, asset to asset (ids are the asset ids above).
+feeds:
+  - [raw-water-tank, raw-water-pump]
+  - [raw-water-pump, carbon-filter]
+  - [carbon-filter, ro-unit]
+  - [ro-unit, treated-water-tank]
+  - [treated-water-tank, treated-water-pump]
+  - [treated-water-pump, sugar-dissolver]
+  - [treated-water-pump, deaerator]
+  - [sugar-dissolver, dissolver-pump]
+  - [dissolver-pump, simple-syrup-tank]
+  - [simple-syrup-tank, syrup-transfer-pump]
+  - [syrup-transfer-pump, final-syrup-tank]
+  - [final-syrup-tank, syrup-feed-pump]
+  - [syrup-feed-pump, blender]
+  - [deaerator, blender]
+  - [blender, product-cooler]
+  - [product-cooler, carbonator]
+  - [carbonator, buffer-tank]
+  - [buffer-tank, filler]
+  - [filler, capper]
+  - [capper, labeler]
+  - [labeler, case-packer]
+  - [case-packer, palletizer]
+supplies:
+  - [co2-tank, carbonator]
+  - [compressed-air, filler]
+  - [compressed-air, capper]
+  - [compressed-air, labeler]
+  - [compressed-air, case-packer]
+  - [compressed-air, palletizer]

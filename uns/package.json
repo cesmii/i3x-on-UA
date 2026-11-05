@@ -1,0 +1,16 @@
+{
+  "name": "@i3x-on-opc/uns",
+  "private": true,
+  "type": "module",
+  "description": "Naive, UNS-style i3X server for the beverage plant (hand-authored model + polling connector); third comparison point",
+  "scripts": {
+    "start": "node --import tsx src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@fastify/compress": "9.2.2",
+    "fastify": "5.12.7",
+    "node-opcua": "2.187.10",
+    "yaml": "2.9.1"
+  }
+}
