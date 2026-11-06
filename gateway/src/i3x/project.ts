@@ -141,7 +141,12 @@ export class Projection {
         this.graphEdge(n.id, r.type, r.target, k === "graph" ? "graph" : "multiPath");
       }
     }
-    for (const id of this.children.keys()) this.objects.get(id)!.isComposition = true;
+    for (const id of this.children.keys()) {
+      const o = this.objects.get(id)!;
+      o.isComposition = true;
+      if (nodes.get(id)?.nodeClass === "Variable") (o.metadata.opcua as { fidelity: Fidelity[] }).fidelity.push({ aspect: "complexVariable", loss: "approximated",
+        detail: "OPC UA complex Variable: it has a Value of its own and DataVariable children. i3X shows the Value as this leaf's value and the children as components; with maxDepth > 1 both are returned, so the value is not composed only of its components." });
+    }
     if (this.p.synthesizeFlow) await synthesizeFlow(this, this.m, this.c);
     for (const [id, o] of this.objects) o.metadata.relationships = this.relationshipsOf(id);
     this.registerNamespaces();
@@ -287,6 +292,8 @@ export class Projection {
     const fidelity: Fidelity[] = [];
     if (!exact) fidelity.push({ aspect: "dataType", loss: "synthesized", detail: `One i3X leaf type per concrete DataType: OPC UA VariableType ${vt.browseName.name} declares ${this.s.name(vt.dataType)} (ValueRank ${vt.valueRank ?? -1}); this projection is for ${this.s.name(n.dataType)} (ValueRank ${n.valueRank ?? -1}).` });
     if (vr !== (n.valueRank ?? -1)) fidelity.push({ aspect: "valueRank", loss: "approximated", detail: `OPC UA ValueRank ${n.valueRank} (scalar or array) is projected as a scalar leaf.` });
+    const b = this.s.builtin(n.dataType);
+    if (b === "i=8" || b === "i=9") fidelity.push(this.int64Note());
     if (props.length) fidelity.push({ aspect: "variableProperties", loss: "flattened", detail: `Properties of the variable (${props.map((p) => p.browseName).join(", ")}) are not part of the leaf value; they appear in each Object's metadata.opcua.properties.` });
     const superId = vt.supertype && this.m.types.has(vt.supertype) ? this.typeId(vt.supertype) : undefined;
     this.objectTypes.set(eid, {
@@ -313,12 +320,15 @@ export class Projection {
     if (t && this.c.isSubtype(t.id, ID.BaseInterfaceType, "type")) fidelity.push({ aspect: "typeDefinition", loss: "approximated", detail: `TypeDefinition ${t.browseName.name} is an OPC UA Interface (abstract); Interfaces are normally applied with HasInterface, not used as a TypeDefinition.` });
     const methods = n.refs.map((r) => this.m.nodes.get(r.target)).filter((x) => x?.nodeClass === "Method").map((x) => this.qname(x!.browseName));
     if (methods.length) fidelity.push({ aspect: "methods", loss: "dropped", detail: `Not callable through i3X 1.0: ${methods.join(", ")}` });
+    if (n.eventNotifier) fidelity.push({ aspect: "events", loss: "dropped", detail: `OPC UA EventNotifier (${[n.eventNotifier & 1 && "SubscribeToEvents", n.eventNotifier & 4 && "HistoryRead", n.eventNotifier & 8 && "HistoryWrite"].filter(Boolean).join(", ")}): events from this Object and its sources are not projected (i3X 1.0 has no event model).` });
     if (n.locale) fidelity.push({ aspect: "displayName", loss: "dropped", detail: `DisplayName locale "${n.locale}" not carried by i3X displayName.` });
 
     // value source + extension check (§6)
     let isExtended = false;
     const schemaExtensions: Record<string, JsonSchema> = {};
     let opcProps: Record<string, unknown> | undefined;
+    if (isLeaf && (n.valueRank === -2 || n.valueRank === -3)) fidelity.push({ aspect: "valueRank", loss: "approximated", detail: `OPC UA ValueRank ${n.valueRank} (${n.valueRank === -2 ? "Any" : "ScalarOrOneDimension"}) is projected as a scalar leaf; an array value would not match the schema.` });
+    const dictionaryEntries = n.refs.filter((r) => r.type === ID.HasDictionaryEntry).map((r) => r.target);
     if (isLeaf) {
       this.values.set(n.id, { kind: "leaf", node: n.id, dataType: n.dataType, valueRank: n.valueRank, props: [] });
       if (props.length) {
@@ -346,13 +356,14 @@ export class Projection {
         opcua: {
           nodeId: n.id, browseName: this.qname(n.browseName), nodeClass: n.nodeClass, namespaceUri: n.browseName.ns,
           typeDefinition: tid, ...(tdef ? { typeBrowseName: this.qname(tdef.browseName) } : {}),
-          ...(isLeaf ? { dataType: this.s.name(n.dataType), valueRank: n.valueRank, writable: ((n.accessLevel ?? 0) & 2) !== 0 } : {}),
+          ...(isLeaf ? { dataType: this.s.name(n.dataType), valueRank: n.valueRank, writable: ((n.accessLevel ?? 0) & 2) !== 0, historizing: n.historizing === true } : {}),
           ...(!isLeaf && props.some((p) => ((p.accessLevel ?? 0) & 2) !== 0) ? { writableProperties: props.filter((p) => ((p.accessLevel ?? 0) & 2) !== 0).map((p) => p.browseName.name) } : {}),
           parentReference: par ? (par.from === ID.Objects ? "Organizes (from Objects: root)" : this.typeId(par.type)) : undefined,
           otherParents: others.length ? others : undefined,
           ...(opcProps ? { properties: opcProps } : {}),
           ...(ifaces.length ? { interfaces: ifaces } : {}),
           ...(methods.length ? { methods } : {}),
+          ...(dictionaryEntries.length ? { dictionaryEntries } : {}),
           fidelity,
         },
       },
@@ -376,17 +387,34 @@ export class Projection {
     return v;
   }
 
+  private int64Note(): Fidelity {
+    return this.p.int64 === "string"
+      ? { aspect: "int64", loss: "typeChanged", detail: "Int64/UInt64 are encoded as decimal strings (JSON numbers lose precision above 2^53); switch int64: number." }
+      : { aspect: "int64", loss: "approximated", detail: "Int64/UInt64 are encoded as JSON numbers; values above 2^53 lose precision (switch int64: string)." };
+  }
+
   // ---------- §3 namespaces ----------
   private registerNamespaces() {
     const uris = new Set<string>();
     for (const t of this.objectTypes.values()) uris.add(t.namespaceUri);
     for (const r of this.relTypes.values()) uris.add(r.namespaceUri);
     const projectionNotes: Fidelity[] = [
-      { aspect: "methods", loss: "dropped", detail: "Methods are not projected (i3X 1.0 has no method call)." },
-      { aspect: "events", loss: "dropped", detail: "Events, Alarms & Conditions are not projected; their Variables are." },
-      { aspect: "properties", loss: "flattened", detail: "Properties become attributes of the owning Object's value (or metadata, for properties of a Variable)." },
-      { aspect: "localizedText", loss: "dropped", detail: "LocalizedText → text only (locale dropped)." },
-      { aspect: "accessRights", loss: "dropped", detail: "AccessLevel, UserAccessLevel, RolePermissions, Historizing flags are not projected." },
+      { aspect: "methods", loss: "dropped", detail: "Methods are not projected (i3X 1.0 has no method call); each Object lists its own in metadata.opcua.methods." },
+      { aspect: "events", loss: "dropped", detail: "Events, Alarms & Conditions are not projected (EventNotifier, event types); their Variables are." },
+      { aspect: "properties", loss: "flattened", detail: "Properties become attributes of the owning Object's value (or metadata.opcua.properties, for Properties of a Variable)." },
+      { aspect: "localizedText", loss: "dropped", detail: "LocalizedText → text only (locale dropped), in values, displayName and description." },
+      { aspect: "timestamps", loss: "dropped", detail: "One timestamp per value: the OPC UA SourceTimestamp, else the ServerTimestamp (UTC). The other timestamp and the picoseconds are dropped. A branch Object's timestamp is the newest of its Properties'." },
+      { aspect: "quality", loss: "approximated", detail: this.p.quality === "base"
+          ? "OPC UA StatusCode → quality reduced to Good / GoodNoData / Bad / Uncertain (switch quality: base); the specific code is dropped. Bad → value null. A branch Object is Uncertain when any of its Properties is not Good (those fields null)."
+          : "OPC UA StatusCode → quality = its symbolic name with the severity split off (Good, Bad_NotConnected, Uncertain_LastUsableValue; info bits as e.g. Good_HistorianInterpolated). The numeric code, limit and overflow bits are not carried. Bad → value null. A branch Object is Uncertain when any of its Properties is not Good (those fields null)." },
+      { aspect: "nonFinite", loss: "approximated", detail: "Float/Double NaN and ±Infinity have no JSON encoding and are returned as null." },
+      this.int64Note(),
+      { aspect: "references", loss: "dropped", detail: "ReferenceTypes not projected as relationships: HasTypeDefinition (→ typeElementId), HasModellingRule (→ schema `required`), HasSubtype (→ InheritsFrom on types), HasInterface (→ metadata.opcua.interfaces), HasEncoding, HasDictionaryEntry (→ metadata.opcua.dictionaryEntries), GeneratesEvent, HasEventSource / HasNotifier (event plumbing), HasHistoricalConfiguration (historian configuration Objects are not crawled; metadata.opcua.historizing says whether a Variable is historized)." },
+      { aspect: "accessRights", loss: "approximated", detail: "UserAccessLevel is reduced to metadata.opcua.writable / writableProperties and Historizing to metadata.opcua.historizing; the other AccessLevel bits, RolePermissions and UserRolePermissions are not projected." },
+    ];
+    const infra = this.m.excluded.map((x) => x.browseName);
+    const uaOnly: Fidelity[] = [
+      { aspect: "notProjected", loss: "dropped", detail: `ns0 infrastructure under Objects is not projected${infra.length ? `: ${infra.join(", ")}` : ""} (switch includeCoreInfrastructure). Views are not projected.` },
     ];
     for (const uri of uris) {
       const raw = uri.replace(/\?projection=i3X$/, "");
@@ -395,7 +423,7 @@ export class Projection {
       this.namespaces.set(uri, {
         uri, displayName: uri === I3X_NS ? "i3X" : uri === GW_NS ? "OPC UA gateway" : this.nsShort(raw),
         metadata: ours ? { description: uri === I3X_NS ? "i3X core relationship types" : "Types and relationship types defined by this gateway (not in any OPC UA NodeSet)" }
-          : { description: `i3X projection of OPC UA namespace ${raw}`, opcua: { namespaceUri: raw, version: info?.version, publicationDate: info?.publicationDate, fidelity: projectionNotes } },
+          : { description: `i3X projection of OPC UA namespace ${raw}`, opcua: { namespaceUri: raw, version: info?.version, publicationDate: info?.publicationDate, fidelity: raw === "http://opcfoundation.org/UA/" ? [...projectionNotes, ...uaOnly] : projectionNotes } },
       });
     }
   }

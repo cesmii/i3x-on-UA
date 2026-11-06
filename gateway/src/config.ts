@@ -18,7 +18,7 @@ export interface Interpretation {
 }
 export interface Config {
   opcua: { endpoint: string };
-  http: { port: number; host: string; basePath: string; serverName: string };
+  http: { port: number; host: string; basePath: string; serverName: string; readOnly?: boolean };
   subscriptions: { ttlSeconds: number; queueLimit: number; samplingMs: number };
   interpretation: Interpretation;
 }
@@ -34,6 +34,8 @@ export function loadConfig(): Config {
   if (env.GATEWAY_PORT) c.http.port = Number(env.GATEWAY_PORT);
   if (env.GATEWAY_HOST) c.http.host = env.GATEWAY_HOST;
   if (env.GATEWAY_BASE_PATH !== undefined) c.http.basePath = env.GATEWAY_BASE_PATH;
+  if (env.GATEWAY_READ_ONLY !== undefined) c.http.readOnly = env.GATEWAY_READ_ONLY === "1" || env.GATEWAY_READ_ONLY === "true";
+  c.http.readOnly = !!c.http.readOnly;
   c.http.basePath = (c.http.basePath ?? "").replace(/\/+$/, "");
   // interpretation switches: I3X_<KEY>=value, e.g. I3X_ENUMS=name
   for (const k of Object.keys(c.interpretation) as Array<keyof Interpretation>) {

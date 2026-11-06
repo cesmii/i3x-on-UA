@@ -35,8 +35,11 @@ function loadConfig(): Config {
   // ${opcua.*} and ${port} (the gateway's own port) are expanded in env values, so each port is set in one place
   for (const g of Object.values(raw.gateways)) for (const k of Object.keys(g.env ?? {})) g.env![k] = expand(String(g.env![k])).replace(/\$\{port\}/g, String(g.port));
   raw.conformance.suite = expand(raw.conformance.suite);
+  if (process.env.FRONT_DOOR_PORT) raw.frontDoor.port = Number(process.env.FRONT_DOOR_PORT);   // per-host override (e.g. systemd)
   return raw;
 }
+/** Public deployment (COMPARE_READ_ONLY=1): the front door rejects PUT/DELETE/PATCH for every gateway and disables /_switch. */
+const READ_ONLY = process.env.COMPARE_READ_ONLY === "1" || process.env.COMPARE_READ_ONLY === "true";
 const url = (g: Gateway) => `http://localhost:${g.port}/v1`;
 const log = (...a: unknown[]) => console.log(`[compare]`, ...a);
 
@@ -107,7 +110,7 @@ function installStop(onStopped: () => void = () => undefined) {
 function startDocker(name: string, g: Gateway) {
   const cname = g.containerName ?? `i3x-compare-${name}`;
   execFileSync("docker", ["rm", "-f", cname], { stdio: "ignore" });
-  const args = ["run", "-d", "--name", cname, "-p", `${g.port}:${g.containerPort ?? 8000}`, "--add-host", "host.docker.internal:host-gateway"];
+  const args = ["run", "-d", "--name", cname, "-p", `127.0.0.1:${g.port}:${g.containerPort ?? 8000}`, "--add-host", "host.docker.internal:host-gateway"];
   for (const [k, v] of Object.entries(g.env ?? {})) args.push("-e", `${k}=${v}`);
   args.push(g.image!);
   log(`${name}: docker ${args.slice(0, 4).join(" ")} … ${g.image}`);
@@ -127,7 +130,7 @@ function startDocker(name: string, g: Gateway) {
 async function up() {
   let cfg = loadConfig();
   if (await portOpen(cfg.frontDoor.port)) {
-    console.error(`[compare] the front door port :${cfg.frontDoor.port} is already in use (another launcher running?). Stop it, or change frontDoor.port in compare/gateways.yaml.`);
+    console.error(`[compare] the front door port :${cfg.frontDoor.port} is already in use (another launcher running?). Stop it, or change frontDoor.port in compare/gateways.yaml (or set FRONT_DOOR_PORT).`);
     process.exit(1);
   }
   let frontDoor: http.Server | undefined;
@@ -158,6 +161,7 @@ async function up() {
   const server = (frontDoor = http.createServer((req, res) => route(req, res, cfg, ready)));
   server.listen(cfg.frontDoor.port, () => {
     log(`front door http://localhost:${cfg.frontDoor.port}/v1 → active "${cfg.active}"   (${Object.keys(cfg.gateways).map((n) => `/${n}/v1`).join(", ")} always direct)`);
+    if (READ_ONLY) log("read-only (COMPARE_READ_ONLY): PUT/DELETE/PATCH and /_switch are refused");
     log("edit compare/gateways.yaml `active:` to switch live; Ctrl-C stops everything this launcher started");
   });
   // poll mtime: editors (and sed -i) replace the file, which breaks fs.watch on macOS after the first save
@@ -182,6 +186,13 @@ function route(req: http.IncomingMessage, res: http.ServerResponse, cfg: Config,
     return;
   }
   const sw = u.match(/^\/_switch\/([^/?]+)/);
+  if (READ_ONLY && (sw || !["GET", "HEAD", "POST", "OPTIONS"].includes(req.method ?? ""))) {
+    res.writeHead(sw ? 403 : 501, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ success: false, responseDetail: sw
+      ? { title: "Forbidden", status: 403, detail: "Switching the active gateway is disabled on this read-only deployment." }
+      : { title: "Not Implemented", status: 501, detail: "This deployment is read-only: writes are disabled for every gateway." } }));
+    return;
+  }
   if (sw) {
     const ok = !!cfg.gateways[sw[1]];
     if (ok) { log(`active gateway (runtime, not saved): ${cfg.active} → ${sw[1]}`); cfg.active = sw[1]; }

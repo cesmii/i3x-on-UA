@@ -100,7 +100,8 @@
   - `description`: the OPC UA Description.
   - `typeNamespaceUri`, `sourceTypeId`, `relationships`.
   - `system`: `{nodeId, nodeClass, browseName}`, an opaque mirror. Clients mustn't rely on it (IG).
-  - `opcua`: `{nodeId, browseName, nodeClass, typeDefinition, parentReference, otherParents[], properties (leaf only), methods[], interfaces[], fidelity[]}`.
+  - `opcua`: `{nodeId, browseName, nodeClass, typeDefinition, parentReference, otherParents[], properties (leaf only), writable + historizing (leaf), writableProperties (branch), methods[], interfaces[], dictionaryEntries[], fidelity[]}`.
+  - Every loss is catalogued, with where it's described, in `FIDELITY.md`. `npm run audit -w gateway` checks this against the live OPC UA server.
 
 ## 7. Values, history, writes, subscriptions (Phase 5)
 
@@ -135,4 +136,13 @@
 
 ## 8. Not projected (fidelity notes at the Namespace level)
 
-Methods, Events/Alarms (incl. PackML alarms *as events*; their Variables are projected), Views, the `Server` object, access levels and user permissions, historizing flags, DataType encodings, and HasDictionaryEntry semantics (listed in `metadata.opcua.dictionaryEntries` only).
+These are noted at Namespace level, and on the Object where it applies:
+- Methods;
+- Events/Alarms (incl. PackML alarms *as events*; their Variables are projected; an EventNotifier Object gets an `events` note);
+- Views, and ns0 infrastructure (`Server`, `Aliases`, `Locations`; the UA namespace note names them);
+- access levels beyond writable, and user permissions;
+- historian configuration (`HasHistoricalConfiguration`; `historizing` is in metadata);
+- DataType encodings;
+- HasDictionaryEntry semantics (listed in `metadata.opcua.dictionaryEntries` only).
+
+The value-encoding notes (timestamps, quality, NaN, Int64, LocalizedText) are in every projected namespace.

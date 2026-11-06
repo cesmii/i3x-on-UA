@@ -10,6 +10,7 @@ http:
   host: 0.0.0.0         # [GATEWAY_HOST]
   basePath: ""          # [GATEWAY_BASE_PATH] e.g. "/cesmii" when sharing one Nginx host with another gateway
   serverName: i3X-on-OPC gateway (CESMII)
+  readOnly: false       # [GATEWAY_READ_ONLY=1] PUT /objects/value → 501, capabilities.update.current = false (public demo)
 
 interpretation:
   includeCoreInfrastructure: false   # project ns0 nodes under Objects (Server, Aliases, …)

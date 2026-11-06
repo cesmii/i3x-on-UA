@@ -2,10 +2,11 @@
   "name": "@i3x-on-opc/gateway",
   "private": true,
   "type": "module",
-  "description": "Generic OPC UA → i3X 1.0 gateway (the CESMII 'ours' interpretation; see docs/gateway/MAPPING.md)",
+  "description": "Generic OPC UA \u2192 i3X 1.0 gateway (the CESMII 'ours' interpretation; see docs/gateway/MAPPING.md)",
   "scripts": {
     "start": "tsx src/main.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "audit": "node --import tsx src/tools/fidelity-audit.ts"
   },
   "dependencies": {
     "@fastify/compress": "9.2.2",

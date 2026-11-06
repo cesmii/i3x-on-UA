@@ -46,7 +46,7 @@ export async function buildServer(cfg: Config, getProjection: () => Projection, 
   app.get(`${base}/info`, async () => {
     const info = {
       specVersion: "1.0", serverVersion: GATEWAY_VERSION, serverName: cfg.http.serverName,
-      capabilities: { query: { history: true }, update: { current: true, history: false }, subscribe: { stream: true } },
+      capabilities: { query: { history: true }, update: { current: !cfg.http.readOnly, history: false }, subscribe: { stream: true } },
     };
     return cfg.interpretation.infoEnvelope === "bare" ? info : { success: true, result: info };
   });
@@ -126,6 +126,7 @@ export async function buildServer(cfg: Config, getProjection: () => Projection, 
     return { success: items.every((r) => r.success), results: items };
   });
   app.put(`${base}/objects/value`, async (req, reply) => {
+    if (cfg.http.readOnly) return fail(reply, 501, "This deployment is read-only (GATEWAY_READ_ONLY): current-value writes are disabled.");
     const u = (req.body as { updates?: unknown } | undefined)?.updates;
     if (!Array.isArray(u) || !u.length) return fail(reply, 400, "Request body must contain a non-empty `updates` array.");
     const results = await values.write(u as never);

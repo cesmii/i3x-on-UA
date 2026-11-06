@@ -36,6 +36,8 @@ export interface UNode {
   dataType?: string;
   valueRank?: number;
   accessLevel?: number;
+  historizing?: boolean;
+  eventNotifier?: number;
   depth: number;
   refs: URef[];          // forward references, all types
 }
@@ -62,6 +64,8 @@ export interface UaModel {
   types: Map<string, UType>;
   refTypes: Map<string, URefType>;
   dataTypes: Map<string, UDataType>;
+  /** ns0 infrastructure under Objects that was not crawled (Server, Aliases, …) */
+  excluded: Array<{ id: string; browseName: string }>;
   crawlMs: number;
 }
 
@@ -73,7 +77,7 @@ const chunks = <T>(a: T[], n = BATCH) => Array.from({ length: Math.ceil(a.length
 
 export class Crawler {
   private ns: string[] = [];
-  readonly m: UaModel = { namespaces: [], namespaceInfo: new Map(), nodes: new Map(), types: new Map(), refTypes: new Map(), dataTypes: new Map(), crawlMs: 0 };
+  readonly m: UaModel = { namespaces: [], namespaceInfo: new Map(), nodes: new Map(), types: new Map(), refTypes: new Map(), dataTypes: new Map(), excluded: [], crawlMs: 0 };
 
   constructor(private readonly session: ClientSession, private readonly opts: { includeCoreInfrastructure: boolean }) {}
 
@@ -172,7 +176,10 @@ export class Crawler {
           if (this.m.nodes.has(target)) continue;
           const nc = NodeClass[r.nodeClass] as keyof typeof NodeClass;
           if (!["Object", "Variable", "Method"].includes(nc)) continue;
-          if (r.nodeId.namespace === 0 && !this.opts.includeCoreInfrastructure) continue;   // ns0 infrastructure (Server, Aliases, …)
+          if (r.nodeId.namespace === 0 && !this.opts.includeCoreInfrastructure) {   // ns0 infrastructure (Server, Aliases, …)
+            if (id === ID.Objects && !this.m.excluded.some((x) => x.id === target)) this.m.excluded.push({ id: target, browseName: r.browseName.name ?? target });
+            continue;
+          }
           this.m.nodes.set(target, {
             id: target, nodeClass: nc, browseName: this.qn(r.browseName), displayName: r.displayName.text ?? r.browseName.name ?? "",
             locale: r.displayName.locale ?? undefined, depth: node.depth + 1, refs: [],
@@ -189,9 +196,16 @@ export class Crawler {
     const nodes = [...this.m.nodes.values()].filter((n) => n.id !== ID.Objects);
     const desc = await this.read(nodes.map((n) => ({ id: n.id, attr: AttributeIds.Description })));
     nodes.forEach((n, i) => { const t = desc[i].value?.value?.text; if (t) n.description = t; });
+    const objs = nodes.filter((n) => n.nodeClass === "Object");
+    const ev = await this.read(objs.map((n) => ({ id: n.id, attr: AttributeIds.EventNotifier })));
+    objs.forEach((n, i) => { const v = ev[i].value?.value; if (typeof v === "number" && v) n.eventNotifier = v; });
     const vars = nodes.filter((n) => n.nodeClass === "Variable");
-    const dv = await this.read(vars.flatMap((n) => [{ id: n.id, attr: AttributeIds.DataType }, { id: n.id, attr: AttributeIds.ValueRank }, { id: n.id, attr: AttributeIds.UserAccessLevel }]));
-    vars.forEach((n, i) => { n.dataType = this.key(dv[3 * i].value.value); n.valueRank = dv[3 * i + 1].value.value; n.accessLevel = dv[3 * i + 2].value.value; });
+    const A = [AttributeIds.DataType, AttributeIds.ValueRank, AttributeIds.UserAccessLevel, AttributeIds.Historizing];
+    const dv = await this.read(vars.flatMap((n) => A.map((attr) => ({ id: n.id, attr }))));
+    vars.forEach((n, i) => {
+      const [d, r, a, h] = dv.slice(A.length * i, A.length * i + A.length);
+      n.dataType = this.key(d.value.value); n.valueRank = r.value.value; n.accessLevel = a.value.value; n.historizing = h.value.value === true;
+    });
   }
 
   // ---------- types ----------
