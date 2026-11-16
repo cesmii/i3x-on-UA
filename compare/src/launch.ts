@@ -185,6 +185,17 @@ async function up() {
   });
 }
 
+/**
+ * Hop-by-hop headers (RFC 9110 §7.6.1) belong to one connection and must not be forwarded. Forwarding Nginx's
+ * `Connection: close` (it speaks HTTP/1.0 upstream) let Node's pooled agent reuse a socket the gateway had been
+ * told to close, so the next request on it (after an SSE stream) was rejected as malformed: 400 "Client Error".
+ */
+const HOP_BY_HOP = new Set(["connection", "keep-alive", "proxy-connection", "transfer-encoding", "upgrade", "te", "trailer", "proxy-authenticate", "proxy-authorization"]);
+function endToEnd<T extends http.IncomingHttpHeaders>(h: T): T {
+  const named = String(h.connection ?? "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);   // headers the Connection header lists are hop-by-hop too
+  return Object.fromEntries(Object.entries(h).filter(([k]) => !HOP_BY_HOP.has(k.toLowerCase()) && !named.includes(k.toLowerCase()))) as T;
+}
+
 function route(req: http.IncomingMessage, res: http.ServerResponse, cfg: Config, ready: Record<string, string>) {
   const u = req.url ?? "/";
   if (u === "/" || u === "/_status") {
@@ -213,10 +224,10 @@ function route(req: http.IncomingMessage, res: http.ServerResponse, cfg: Config,
   const pathOut = m && cfg.gateways[m[1]] ? m[2] : u;
   const g = cfg.gateways[name];
   const up = http.request({ host: "127.0.0.1", port: g.port, method: req.method, path: pathOut,
-    headers: { ...req.headers, host: `localhost:${g.port}`, "x-forwarded-host": req.headers.host ?? "", "x-forwarded-prefix": m ? `/${m[1]}` : "", "x-i3x-gateway": name } },
+    headers: { ...endToEnd(req.headers), host: `localhost:${g.port}`, "x-forwarded-host": req.headers.host ?? "", "x-forwarded-prefix": m ? `/${m[1]}` : "", "x-i3x-gateway": name } },
   (r) => {
     const json = String(r.headers["content-type"] ?? "").includes("application/json");
-    if (!g.relabel || !json) { res.writeHead(r.statusCode ?? 502, { ...r.headers, "x-i3x-gateway": name }); r.pipe(res); return; }
+    if (!g.relabel || !json) { res.writeHead(r.statusCode ?? 502, { ...endToEnd(r.headers), "x-i3x-gateway": name }); r.pipe(res); return; }
     relabelBody(r, res, g.relabel, req.headers["accept-encoding"], name);
   });
   up.on("error", (e) => {
@@ -250,11 +261,11 @@ function relabelBody(r: http.IncomingMessage, res: http.ServerResponse, map: Rec
       };
       buf = Buffer.from(JSON.stringify(walk(JSON.parse(plain.toString("utf8")))));
     } catch {                                   // not JSON after all: pass through unchanged
-      res.writeHead(r.statusCode ?? 502, { ...r.headers, "x-i3x-gateway": name });
+      res.writeHead(r.statusCode ?? 502, { ...endToEnd(r.headers), "x-i3x-gateway": name });
       res.end(original);
       return;
     }
-    const headers: http.OutgoingHttpHeaders = { ...r.headers, "x-i3x-gateway": name, "x-i3x-relabeled": "1" };
+    const headers: http.OutgoingHttpHeaders = { ...endToEnd(r.headers), "x-i3x-gateway": name, "x-i3x-relabeled": "1" };
     delete headers["content-length"]; delete headers["content-encoding"]; delete headers["transfer-encoding"];
     if (/\bgzip\b/.test(String(acceptEncoding ?? ""))) { buf = zlib.gzipSync(buf); headers["content-encoding"] = "gzip"; }   // IG: gzip when asked
     headers["content-length"] = buf.length;
