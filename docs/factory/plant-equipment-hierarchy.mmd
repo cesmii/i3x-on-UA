@@ -1,15 +1,30 @@
 flowchart TD
-  ENT["Enterprise: Demo Beverage Co."] --> SITE["Site: Plant 1"]
-  SITE --> A100["Area: Water Treatment"]
-  SITE --> A200["Area: Syrup Room"]
-  SITE --> A300["Area: Blending & Carbonation"]
-  SITE --> A400["ProductionLine: Bottling Line 1"]
-  SITE -.-> A500["ProductionLine: Bottling Line 2 (future)"]
-  SITE --> A900["Area: Utilities"]
+  classDef eq fill:#dbeafe,stroke:#1d4ed8,color:#0b1b3f
+  classDef people fill:#fef3c7,stroke:#b45309,color:#3b1d02
+  classDef mat fill:#dcfce7,stroke:#15803d,color:#052e16
+  classDef order fill:#fce7f3,stroke:#be185d,color:#500724
+  classDef folder fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-dasharray:3 3
 
-  A100 --> U1["Units: T-101, F-101, RO-101, T-102"]
-  A100 --> P1["Pumps: P-101, P-102 (OPC 40223)"]
-  A200 --> U2["Units: SD-201, T-201, T-202 (Acme)<br/>Pumps: P-201, P-202, P-203"]
-  A300 --> U3["Units: DA-301, BL-301, HX-301, CB-301, T-301"]
-  A400 --> M4["WorkCells: FL-401 … PZ-405 (Machinery + PackML)"]
-  U1 --> I1["ControlModules: LT/FT/TT/PT/CT transmitters, valves (PA-DIM)"]
+  OBJ["OPC UA Objects"]:::folder
+  OBJ --> ENT["Enterprise: Demo Beverage Co."]:::eq
+  OBJ --> PERS["Personnel"]:::people
+  OBJ --> MAT["Materials"]:::mat
+  OBJ --> ORD["Orders"]:::order
+  OBJ --> EC["EquipmentClasses<br/>StorageTank, Carbonator, Filler, …"]:::folder
+  OBJ --> MACH["Machines (Machinery §9)<br/>also Organizes every machine"]:::folder
+
+  ENT --> SITE["Site: Plant 1"]:::eq
+  SITE --> A100["Area: Water Treatment<br/>T-101, P-101, F-101, RO-101, T-102, P-102"]:::eq
+  SITE --> A200["Area: Syrup Room<br/>SD-201, T-201, T-202 (Acme) · P-201…P-203"]:::eq
+  SITE --> A300["Area: Blending & Carbonation<br/>DA-301, BL-301, HX-301, CB-301, T-301"]:::eq
+  SITE --> A400["ProductionLine: Bottling Line 1<br/>FL-401 … PZ-405 (Machinery + PackML)"]:::eq
+  SITE --> A900["Area: Utilities<br/>CO2-901, AC-902"]:::eq
+  SITE -.-> A500["ProductionLine: Bottling Line 2 (future)"]:::folder
+
+  PERS --> PC["Personnel Classes (5)"]:::people
+  PERS --> PP["Persons<br/>E-1001 … E-1007"]:::people
+  MAT --> MC["Material Classes (7)"]:::mat
+  MAT --> MD["Material Definitions (12)"]:::mat
+  MAT --> ML["Material Lots (11)"]:::mat
+  ORD --> WR["Work requests<br/>WR-2611-0042, WR-2611-0043"]:::order
+  WR --> JO["Job orders<br/>JO-…-10 syrup · -20 blend · -30 pack"]:::order

@@ -1,0 +1,44 @@
+flowchart LR
+  classDef eq fill:#dbeafe,stroke:#1d4ed8,color:#0b1b3f
+  classDef machine fill:#f3e8ff,stroke:#7e22ce,color:#2e0a4f
+  classDef util fill:#e5e7eb,stroke:#4b5563,color:#111827
+  classDef people fill:#fef3c7,stroke:#b45309,color:#3b1d02
+  classDef mat fill:#dcfce7,stroke:#15803d,color:#052e16
+  classDef order fill:#fce7f3,stroke:#be185d,color:#500724
+
+  WR["<b>WR-2611-0042</b> work request<br/>(WR-2611-0043 the same)"]:::order
+  J10["JO-0042-10<br/>Prepare final syrup"]:::order
+  J20["JO-0042-20<br/>Blend and carbonate"]:::order
+  J30["JO-0042-30<br/>Fill, cap, label, pack"]:::order
+  WR -- HasComponent --> J10 & J20 & J30
+
+  E1004["E-1004 Riley Moreno<br/>ProcessOperator"]:::people
+  E1005["E-1005 Casey Nakamura<br/>ProcessOperator"]:::people
+  E1002["E-1002 Jordan Okafor<br/>LineOperator"]:::people
+  E1003["E-1003 Sam Lindqvist<br/>LineOperator"]:::people
+
+  SYR["<b>Syrup Room</b><br/>SD-201 · T-201 · T-202<br/>SugarSupply · ConcentrateSupply"]:::eq
+  BLD["<b>Blending & Carbonation</b><br/>RO-101 · DA-301 · BL-301 · CB-301"]:::eq
+  CO2T["<b>Utilities</b><br/>CO2-901 CO₂ Supply"]:::util
+  LINE["<b>Bottling Line 1</b><br/>FL-401 · CP-402 · LB-403<br/>CK-404 · PZ-405"]:::machine
+
+  RAW["SUG-2611-07 sugar<br/>CNC-2611-02 concentrate"]:::mat
+  SYRL["SYR-2611-16<br/>final syrup"]:::mat
+  CO2L["CO2-2611-01<br/>CO₂"]:::mat
+  PACK["PET · CAP · LBL · CSE · PLT<br/>packaging lots"]:::mat
+  FG["FG-2611-0042<br/>Cola 500 mL"]:::mat
+
+  E1004 -. Operates .-> SYR
+  E1005 -. Operates .-> BLD
+  E1002 & E1003 -. Operates .-> LINE
+  J10 -. DispatchedTo .-> SYR
+  J20 -. DispatchedTo .-> BLD
+  J30 -. DispatchedTo .-> LINE
+
+  SYR -. "Consumes · StorageLocationOf" .-> RAW
+  SYR -. "Produces · StorageLocationOf" .-> SYRL
+  BLD -. Consumes .-> SYRL
+  BLD -. Consumes .-> CO2L
+  CO2T -. StorageLocationOf .-> CO2L
+  LINE -. Consumes .-> PACK
+  LINE -. Produces .-> FG

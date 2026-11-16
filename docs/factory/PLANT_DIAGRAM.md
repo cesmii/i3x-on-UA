@@ -1,6 +1,6 @@
-# Virtual Beverage Plant: Diagrams (draft for Phase 1 review)
+# Virtual Beverage Plant: Diagrams
 
-Details (ratings, instruments, connections, IDs): `PLANT_DESIGN.md`.
+Details (ratings, instruments, connections, IDs): `PLANT_DESIGN.md` (personnel, materials and orders: §8). Each diagram is also exported as a `.mmd` file in this folder for Mermalaid; re-export after edits.
 
 Tags follow ISA-5.1 style. Area numbers: 100 Water Treatment, 200 Syrup Room, 300 Blending & Carbonation, 400 Bottling Line 1, 500 Bottling Line 2 (future, with injected problems for the hack-a-thon), 900 Utilities. Instrument letters: LT level, FT flow, TT temperature, PT pressure, DT density/Brix, CT conductivity, AT analyzer (CO₂), XV on/off valve, FCV flow control valve.
 
@@ -132,24 +132,103 @@ flowchart TB
 | Plain line between machines | Machine sequence on the packaging line | **not modeled as material links yet** (decided 2026-11-05) |
 | Text under a name (LT-101, FT-301, …) | Instruments on that unit (ISA-5.1 tags) | PA-DIM devices |
 
-## 2. Equipment hierarchy (ISA-95, `MadeUpOfEquipment`)
+## 2. Address space: the top-level trees
+
+Under OPC UA `Objects`: the ISA-95 equipment hierarchy (linked with `MadeUpOfEquipment`), and since 2026-11-16 the **Personnel**, **Materials** and **Orders** trees. EquipmentClasses and Machinery's `Machines` folder sit beside them.
 
 ```mermaid
 flowchart TD
-  ENT["Enterprise: Demo Beverage Co."] --> SITE["Site: Plant 1"]
-  SITE --> A100["Area: Water Treatment"]
-  SITE --> A200["Area: Syrup Room"]
-  SITE --> A300["Area: Blending & Carbonation"]
-  SITE --> A400["ProductionLine: Bottling Line 1"]
-  SITE -.-> A500["ProductionLine: Bottling Line 2 (future)"]
-  SITE --> A900["Area: Utilities"]
+  classDef eq fill:#dbeafe,stroke:#1d4ed8,color:#0b1b3f
+  classDef people fill:#fef3c7,stroke:#b45309,color:#3b1d02
+  classDef mat fill:#dcfce7,stroke:#15803d,color:#052e16
+  classDef order fill:#fce7f3,stroke:#be185d,color:#500724
+  classDef folder fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-dasharray:3 3
 
-  A100 --> U1["Units: T-101, F-101, RO-101, T-102"]
-  A100 --> P1["Pumps: P-101, P-102 (OPC 40223)"]
-  A200 --> U2["Units: SD-201, T-201, T-202 (Acme)<br/>Pumps: P-201, P-202, P-203"]
-  A300 --> U3["Units: DA-301, BL-301, HX-301, CB-301, T-301"]
-  A400 --> M4["WorkCells: FL-401 … PZ-405 (Machinery + PackML)"]
-  U1 --> I1["ControlModules: LT/FT/TT/PT/CT transmitters, valves (PA-DIM)"]
+  OBJ["OPC UA Objects"]:::folder
+  OBJ --> ENT["Enterprise: Demo Beverage Co."]:::eq
+  OBJ --> PERS["Personnel"]:::people
+  OBJ --> MAT["Materials"]:::mat
+  OBJ --> ORD["Orders"]:::order
+  OBJ --> EC["EquipmentClasses<br/>StorageTank, Carbonator, Filler, …"]:::folder
+  OBJ --> MACH["Machines (Machinery §9)<br/>also Organizes every machine"]:::folder
+
+  ENT --> SITE["Site: Plant 1"]:::eq
+  SITE --> A100["Area: Water Treatment<br/>T-101, P-101, F-101, RO-101, T-102, P-102"]:::eq
+  SITE --> A200["Area: Syrup Room<br/>SD-201, T-201, T-202 (Acme) · P-201…P-203"]:::eq
+  SITE --> A300["Area: Blending & Carbonation<br/>DA-301, BL-301, HX-301, CB-301, T-301"]:::eq
+  SITE --> A400["ProductionLine: Bottling Line 1<br/>FL-401 … PZ-405 (Machinery + PackML)"]:::eq
+  SITE --> A900["Area: Utilities<br/>CO2-901, AC-902"]:::eq
+  SITE -.-> A500["ProductionLine: Bottling Line 2 (future)"]:::folder
+
+  PERS --> PC["Personnel Classes (5)"]:::people
+  PERS --> PP["Persons<br/>E-1001 … E-1007"]:::people
+  MAT --> MC["Material Classes (7)"]:::mat
+  MAT --> MD["Material Definitions (12)"]:::mat
+  MAT --> ML["Material Lots (11)"]:::mat
+  ORD --> WR["Work requests<br/>WR-2611-0042, WR-2611-0043"]:::order
+  WR --> JO["Job orders<br/>JO-…-10 syrup · -20 blend · -30 pack"]:::order
 ```
 
-Machines are **direct children of their line**. Machinery's `Machines` folder (§9) also `Organizes` FL-401 … PZ-405 (and the skids that carry Machinery building blocks), because the spec requires that entry point. In i3X, `parentId` is the line, and the `Machines` link appears only as a graph relationship with a fidelity note.
+Machines are **direct children of their line**. Machinery's `Machines` folder (§9) also `Organizes` FL-401 … PZ-405, plus the skids that carry Machinery building blocks, because the spec requires that entry point. In i3X, `parentId` is the line, and the `Machines` link appears only as a graph relationship with a fidelity note.
+
+The i3X servers show this differently:
+- **CESMII gateway** (with its `singleRoot` switch on, as in the demo): Demo Beverage Co. is the single root, and every other tree hangs under it.
+- **i3x2ua**: shows `Objects` itself as the root.
+- **UNS server**: has its own hand-made roots (`demobev`, `people`, `materials`, `orders`).
+
+## 3. People, materials and orders: graph relationships
+
+How the three new trees connect to the equipment. Every dotted arrow is a **non-hierarchical reference**, so in i3X it's a graph relationship, never a second parent. Read each row left to right: who operates an area, which job order runs there, and which lots it consumes, produces or stores.
+
+```mermaid
+flowchart LR
+  classDef eq fill:#dbeafe,stroke:#1d4ed8,color:#0b1b3f
+  classDef machine fill:#f3e8ff,stroke:#7e22ce,color:#2e0a4f
+  classDef util fill:#e5e7eb,stroke:#4b5563,color:#111827
+  classDef people fill:#fef3c7,stroke:#b45309,color:#3b1d02
+  classDef mat fill:#dcfce7,stroke:#15803d,color:#052e16
+  classDef order fill:#fce7f3,stroke:#be185d,color:#500724
+
+  WR["<b>WR-2611-0042</b> work request<br/>(WR-2611-0043 the same)"]:::order
+  J10["JO-0042-10<br/>Prepare final syrup"]:::order
+  J20["JO-0042-20<br/>Blend and carbonate"]:::order
+  J30["JO-0042-30<br/>Fill, cap, label, pack"]:::order
+  WR -- HasComponent --> J10 & J20 & J30
+
+  E1004["E-1004 Riley Moreno<br/>ProcessOperator"]:::people
+  E1005["E-1005 Casey Nakamura<br/>ProcessOperator"]:::people
+  E1002["E-1002 Jordan Okafor<br/>LineOperator"]:::people
+  E1003["E-1003 Sam Lindqvist<br/>LineOperator"]:::people
+
+  SYR["<b>Syrup Room</b><br/>SD-201 · T-201 · T-202<br/>SugarSupply · ConcentrateSupply"]:::eq
+  BLD["<b>Blending & Carbonation</b><br/>RO-101 · DA-301 · BL-301 · CB-301"]:::eq
+  CO2T["<b>Utilities</b><br/>CO2-901 CO₂ Supply"]:::util
+  LINE["<b>Bottling Line 1</b><br/>FL-401 · CP-402 · LB-403<br/>CK-404 · PZ-405"]:::machine
+
+  RAW["SUG-2611-07 sugar<br/>CNC-2611-02 concentrate"]:::mat
+  SYRL["SYR-2611-16<br/>final syrup"]:::mat
+  CO2L["CO2-2611-01<br/>CO₂"]:::mat
+  PACK["PET · CAP · LBL · CSE · PLT<br/>packaging lots"]:::mat
+  FG["FG-2611-0042<br/>Cola 500 mL"]:::mat
+
+  E1004 -. Operates .-> SYR
+  E1005 -. Operates .-> BLD
+  E1002 & E1003 -. Operates .-> LINE
+  J10 -. DispatchedTo .-> SYR
+  J20 -. DispatchedTo .-> BLD
+  J30 -. DispatchedTo .-> LINE
+
+  SYR -. "Consumes · StorageLocationOf" .-> RAW
+  SYR -. "Produces · StorageLocationOf" .-> SYRL
+  BLD -. Consumes .-> SYRL
+  BLD -. Consumes .-> CO2L
+  CO2T -. StorageLocationOf .-> CO2L
+  LINE -. Consumes .-> PACK
+  LINE -. Produces .-> FG
+```
+
+- **Reading the boxes:** equipment boxes group the units in an area. The references attach to the individual units, e.g. E-1004 `Operates` SD-201, T-201 and T-202 separately, and SYR-2611-16 is `StoredIn` T-202.
+- **Storage:** storage is drawn as the inverse name `StorageLocationOf` so that every arrow reads left to right. In the model, the lot holds the forward reference, `StoredIn`.
+- **Job orders also consume and produce lots**, the same lots as their area: JO-…-10 consumes the sugar and concentrate lots and produces SYR-2611-16. Those edges are left out to keep the picture readable.
+- **Also in the model:** each person is `DefinedByPersonnelClass`, each material definition `DefinedByMaterialClass`, and each lot `DefinedByMaterialDefinition`.
+- **Source:** the `personnel`, `materials` and `orders` sections of `factory/plant/line1.yaml`.

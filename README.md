@@ -20,6 +20,42 @@ One site with water treatment, a syrup room, blending & carbonation, a bottling 
 - **Personnel, materials, orders.** ISA-95 persons and classes, material definitions and lots, and work requests made of job orders. They're linked to the equipment by graph relationships (Operates, Consumes, Produces, StoredIn, DispatchedTo).
 - **Live simulation.** Mass balance, batch syrup making, PackML state machines with faults, and starved/blocked propagation. Job orders progress as the line runs.
 
+```mermaid
+flowchart TB
+  classDef area fill:#dbeafe,stroke:#1d4ed8,color:#0b1b3f
+  classDef line fill:#f3e8ff,stroke:#7e22ce,color:#2e0a4f
+  classDef util fill:#e5e7eb,stroke:#4b5563,color:#111827
+  classDef people fill:#fef3c7,stroke:#b45309,color:#3b1d02
+  classDef mat fill:#dcfce7,stroke:#15803d,color:#052e16
+  classDef order fill:#fce7f3,stroke:#be185d,color:#500724
+
+  PE["<b>Personnel</b><br/>operators · supervisor · maintenance · QA"]:::people
+  OR["<b>Orders</b><br/>work requests › job orders: syrup · blend · pack"]:::order
+
+  subgraph EQ["Equipment: Demo Beverage Co. › Plant 1 (ISA-95)"]
+    direction LR
+    WT["Water Treatment<br/>tanks · pumps · filter · RO"]:::area
+    SR["Syrup Room<br/>dissolver · syrup tanks"]:::area
+    UT["Utilities<br/>CO₂ · compressed air"]:::util
+    BC["Blending & Carbonation<br/>deaerator · blender · carbonator"]:::area
+    BL["Bottling Line 1 (PackML)<br/>filler › capper › labeler ›<br/>case packer › palletizer"]:::line
+    WT -- water --> SR
+    WT -- water --> BC
+    SR -- syrup --> BC
+    UT -- CO₂ --> BC
+    BC -- beverage --> BL
+  end
+
+  MA["<b>Materials</b><br/>lots: sugar · concentrate · CO₂ · syrup · packaging · finished goods"]:::mat
+
+  PE -. Operates .-> EQ
+  OR -. DispatchedTo .-> EQ
+  EQ -. "Consumes · Produces · StoredIn" .-> MA
+  OR -. "Consumes · Produces" .-> MA
+```
+
+Solid arrows are material flow; dotted arrows are graph relationships between the trees. For the full process flow, the address-space trees, and exactly who operates what and which lots go where, see [`docs/factory/PLANT_DIAGRAM.md`](docs/factory/PLANT_DIAGRAM.md).
+
 ## Run it yourself
 
 You need **Node.js 24** and **git**. **Docker** is optional: it's only used for the i3x2ua container, which is skipped without it. Works on macOS, Linux and WSL.
@@ -65,6 +101,7 @@ Each part can also run on its own, e.g. `npm start -w server` (plant only) or `n
 | [`docs/gateway/MAPPING.md`](docs/gateway/MAPPING.md) | How the CESMII gateway maps OPC UA to i3X, with every switch |
 | [`docs/gateway/FIDELITY.md`](docs/gateway/FIDELITY.md) | What the projection loses, and the audit that checks every loss is described (`npm run audit -w gateway`) |
 | [`docs/gateway/COMPARISON.md`](docs/gateway/COMPARISON.md) | CESMII vs i3x2ua (and UNS), difference by difference |
+| [`docs/factory/PLANT_DIAGRAM.md`](docs/factory/PLANT_DIAGRAM.md) | Diagrams: process flow, address-space trees, people/materials/orders relationships |
 | [`docs/factory/`](docs/factory/) | Plant design, standards coverage, OPC UA model notes, simulation |
 | [`uns/README.md`](uns/README.md) | The UNS persona and its deliberately naive choices |
 | [`deploy/README.md`](deploy/README.md) | How the public demo is deployed and kept up to date |
