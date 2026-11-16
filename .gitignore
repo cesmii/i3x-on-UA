@@ -57,3 +57,6 @@ docs/pmmi/*
 
 # --- working files that aren't ours to publish ---
 docs/*.pptx
+
+# --- server deploy state (deploy/deploy.sh) ---
+.last-deploy

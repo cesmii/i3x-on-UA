@@ -1,165 +1,117 @@
-# Deploying the demo on a Linux server (systemd)
+# Deployment: https://opcua.i3x.dev
 
-`deploy/i3x-on-opc.service` runs what `./start.sh` runs on a laptop: the OPC UA plant simulation, the three i3X gateways (cesmii, i3x2ua, uns) and the front door. It starts at boot, restarts on failure, and runs **read-only**.
+The public demo runs on the CESMII server `admin.cesmii.net` (Ubuntu 22.04) as one systemd unit, `i3x-on-ua`. It runs what `./start.sh` runs on a laptop: the OPC UA plant simulation, the three i3X servers (cesmii, i3x2ua, uns) and the front door. It is **read-only**.
 
-> **Status (2026-11-16): ready, first deployment in progress.** The repo is prepared for publication: OPC Foundation spec documents and PMMI files are no longer tracked (`.gitignore`; each `docs/` folder's README says where to get them). The OPC Foundation NodeSets in `nodesets/standard/` are MIT-licensed and stay.
->
-> The unit was written for and checked against the launcher's behaviour on macOS. **It has not been run under systemd yet**, so watch the first start (step 6).
-
-## 1. What you get, and what to expose
-
-| Port | What | Open in the firewall? |
-|---|---|---|
-| **8084** (set `FRONT_DOOR_PORT` in the unit to change it) | **Front door:** `/cesmii/v1`, `/i3x2ua/v1`, `/uns/v1`; `/v1` → the active gateway; `/` → JSON status | **Yes.** This is the only URL to give the WG. |
-| 4840 | OPC UA plant `opc.tcp://<host>:4840/UA/BeverageFactory`, for UaExpert | Only if people need UaExpert (it's writable; see below) |
-| 8081, 8083 | cesmii and uns directly (they listen on all interfaces) | **No.** Same content as through the front door |
-| 8082 | i3x2ua container (published on 127.0.0.1 only) | Not reachable from outside |
-
-The unit's environment sets **read-only mode**:
-- `COMPARE_READ_ONLY=1`: the front door refuses `PUT`, `DELETE` and `PATCH` for every gateway (501), and `/_switch/…` (403). i3X reads and subscriptions are `GET` or `POST`, so they keep working.
-- `GATEWAY_READ_ONLY=1`: cesmii itself returns 501 on `PUT /objects/value`, and `/info` says `capabilities.update.current: false`. This covers :8081 if it's ever reached directly.
-- i3x2ua runs with writes off (its default), and uns has no writes.
-- Conformance through the front door: **1.0 Compatible**, with Update listed as an omitted optional feature.
-
-**Not covered by read-only:**
-- **The OPC UA server on 4840.** It allows anonymous access with security None, so anyone who reaches it can write the Machinery Identification read-write properties (`AssetId`, `ComponentName`, `Location`). No Methods are implemented. A restart resets the values.
-- **TLS and authentication.** There are none. That's acceptable for a demo; the conformance suite warns about it (CORE-06). The plan (D8) is Nginx in front (§8).
-
-## 2. Prerequisites and code
-
-On the server you need:
-- Linux with systemd;
-- **Node 24** (20+ works);
-- **Docker Engine**, for i3x2ua (`ghcr.io/andreasheine/i3x2ua:1.16.2`, pulled on first start; needs outbound access to ghcr.io);
-- git.
-
-Create a service user and directory (as root):
-
-```sh
-useradd --system --create-home i3x          # needs a home for npm's cache; an existing user works too
-usermod -aG docker i3x                      # the launcher runs `docker run` / `docker rm`
-install -d -o i3x -g i3x /opt/i3x-on-OPC
+```
+Internet ──https──> Cloudflare ──https──> Nginx :443 (opcua.i3x.dev) ──> front door 127.0.0.1:8084
+                                                                          ├─ /cesmii/v1  → cesmii gateway :8085
+                                                                          ├─ /i3x2ua/v1  → i3x2ua container 127.0.0.1:8082
+                                                                          ├─ /uns/v1     → uns :8083
+                                                                          └─ /v1         → the active one (compare/gateways.yaml)
+                                       all three read the plant: opc.tcp://localhost:4840/UA/BeverageFactory
 ```
 
-**Get the code onto the server.** If there's a remote:
-
-```sh
-sudo -u i3x git clone <repo-url> /opt/i3x-on-OPC
-```
-
-If there isn't one yet, use a bundle. It carries the full history and needs no remote:
-
-```sh
-# on the Mac
-git -C ~/Projects/i3x-on-OPC bundle create /tmp/i3x-on-OPC.bundle main
-scp /tmp/i3x-on-OPC.bundle <server>:/tmp/
-# on the server
-sudo -u i3x git clone /tmp/i3x-on-OPC.bundle /opt/i3x-on-OPC
-```
-
-`.env`, `server/pki/` and `node_modules/` aren't in git; they get created on the server.
-
-## 3. Install dependencies
-
-```sh
-cd /opt/i3x-on-OPC
-sudo -u i3x npm ci                          # exact pinned versions from package-lock.json
-sudo -u i3x cp .env.example .env            # simulation settings; the defaults are fine
-```
-
-The plant NodeSets (`nodesets/factory/BeverageFactory.NodeSet2.xml` and `ISA95Operations.NodeSet2.xml`) are committed. If either is missing, run `sudo -u i3x npm run generate -w factory`.
-
-Optional smoke test before systemd: `sudo -u i3x ./start.sh`, wait for `front door http://localhost:8084/v1`, then Ctrl-C.
-
-## 4. Install the unit
-
-```sh
-cp deploy/i3x-on-opc.service /etc/systemd/system/
-sudo -u i3x bash -lc 'command -v node'      # e.g. /home/i3x/.nvm/versions/node/v24.x/bin/node
-```
-
-Edit `/etc/systemd/system/i3x-on-opc.service`:
-
-| Line | Set it to |
+| File | Installed as |
 |---|---|
-| `User=` | the service user (`i3x`) |
-| `WorkingDirectory=` | the checkout (`/opt/i3x-on-OPC`) |
-| `Environment=PATH=` | the directory holding `node` first, e.g. `/home/i3x/.nvm/versions/node/v24.x/bin:/usr/local/bin:/usr/bin:/bin`. systemd doesn't read nvm or `.bashrc`. |
-| `Environment=FRONT_DOOR_PORT=` | `8084`, or a free port if 8084 is taken (`ss -ltnp | grep :8084`) |
+| `deploy/i3x-on-ua.service` | `/etc/systemd/system/i3x-on-ua.service` |
+| `deploy/nginx-opcua.i3x.dev.conf` | `/etc/nginx/sites-available/opcua` (+ symlink in `sites-enabled`) |
+| `deploy/deploy.sh` | run by cron from the checkout |
 
-Write each setting on its own line: systemd unit files don't support comments after a value.
+## How updates reach the server
 
-**Other port clashes** (`ss -ltnp | grep -E ':(4840|808[1-3])'`): there's no override yet, so edit `compare/gateways.yaml` on the server. Each gateway has a `port:`. The plant's port is in both `opcua.endpoint` and `opcua.containerEndpoint`; change them together. A local edit there will need care on `git pull`.
+The checkout is `/var/www/apps/i3x-on-UA` (`~/apps` links to `/var/www/apps`), cloned over https from the public repo.
+- The host's `/var/www/apps/git-update.sh` cron already runs `git pull` in every repo there every 2 minutes.
+- **`deploy/deploy.sh`** (cron, every 3 minutes, like `CesmiiMigration/deploy.sh`) pulls too. When `HEAD` differs from the commit the service was started from (`.last-deploy`), it does three things:
+  - runs `npm ci` if `package-lock.json` changed;
+  - creates `.env` from `.env.example` if it's missing;
+  - runs `sudo systemctl restart i3x-on-ua`.
 
-## 5. Firewall
+  Commits that only touch Markdown don't restart (a restart resets the simulation and drops i3X subscriptions). The script prints nothing when there's nothing to do, so cron mails only real deploys and errors.
 
-Using ufw (replace 8084 if you changed `FRONT_DOOR_PORT`):
+So: **push to `main`, and the demo restarts on the new commit within about 3 minutes.**
 
-```sh
-ufw allow 8084/tcp
-ufw allow in on docker0 to any port 4840 proto tcp    # required: lets the i3x2ua container reach the plant on the host
-# ufw allow 4840/tcp                                  # only if people need UaExpert (writable, see §1)
-```
+## Ports on this host
 
-- **Without the `docker0` rule**, ufw's default deny blocks the container from reaching the plant, and i3x2ua never gets ready.
-- **With firewalld**, put `docker0` in the `trusted` zone instead: `firewall-cmd --permanent --zone=trusted --add-interface=docker0`.
-- **Don't open 8081–8083.** Docker publishes 8082 on 127.0.0.1 only, so its usual habit of bypassing ufw doesn't apply.
+8080 and 8081 are used by the i3X demo servers (`api.i3x.dev`), so our gateway runs on **8085** (`COMPARE_PORT_CESMII` in the unit). ufw only admits 80/443 from Cloudflare plus SSH, so none of these is reachable from outside.
 
-## 6. Start and verify
+| Port | What | Listens on |
+|---|---|---|
+| 8084 | Front door (Nginx proxies to it) | all interfaces, firewalled |
+| 8085 | cesmii gateway | all interfaces, firewalled |
+| 8082 | i3x2ua container | 127.0.0.1 |
+| 8083 | uns | all interfaces, firewalled |
+| 4840 | OPC UA plant | all interfaces, firewalled; the `docker0` rule below lets the i3x2ua container in |
 
-```sh
-systemctl daemon-reload
-systemctl enable --now i3x-on-opc
-journalctl -u i3x-on-opc -f
-```
+## Read-only, and what isn't covered
 
-Expect something like the following within a minute or two (the first start pulls the i3x2ua image):
+The unit sets:
+- `COMPARE_READ_ONLY=1`: the front door refuses `PUT`, `DELETE` and `PATCH` for every gateway (501), and `/_switch/…` (403). i3X reads and subscriptions are `GET`/`POST`, so they work.
+- `GATEWAY_READ_ONLY=1`: cesmii returns 501 on `PUT /objects/value`, and `/info` says `capabilities.update.current: false`.
 
-```
-[compare] cesmii: ready in 3.0 s → http://localhost:8081/v1
-[compare] i3x2ua: ready in 10.1 s → http://localhost:8082/v1
-[compare] uns: ready in 2.0 s → http://localhost:8083/v1
-[compare] front door http://localhost:8084/v1 → active "cesmii" …
-[compare] read-only (COMPARE_READ_ONLY): PUT/DELETE/PATCH and /_switch are refused
-```
+i3x2ua runs with writes off (its default), and uns has no writes. Nginx sends CORS headers for `GET, POST, OPTIONS` only.
 
-Then, from **another machine** (`H=http://<server>:8084`):
+**Not covered:** authentication. i3X is open to anyone who reaches Cloudflare. The OPC UA server isn't exposed at all.
+
+## First-time install (done 2026-11-16)
 
 ```sh
-curl -s $H/ | head -20                                   # status: all three gateways "ready in …"
+# code
+git clone https://github.com/cesmii/i3x-on-UA.git /var/www/apps/i3x-on-UA
+cd /var/www/apps/i3x-on-UA && cp .env.example .env && npm ci
+
+# service
+sudo cp deploy/i3x-on-ua.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now i3x-on-ua
+git rev-parse HEAD > .last-deploy
+
+# the i3x2ua container must reach the plant on the host (ufw denies it by default)
+sudo ufw allow in on docker0 to any port 4840 proto tcp comment 'i3x-on-UA: i3x2ua container -> OPC UA plant'
+
+# web
+sudo cp deploy/nginx-opcua.i3x.dev.conf /etc/nginx/sites-available/opcua
+sudo ln -s ../sites-available/opcua /etc/nginx/sites-enabled/opcua
+sudo nginx -t && sudo systemctl reload nginx
+
+# updates
+(crontab -l; echo '*/3 * * * * /var/www/apps/i3x-on-UA/deploy/deploy.sh') | crontab -
+```
+
+DNS: `opcua.i3x.dev` is a proxied (orange-cloud) record in the i3x.dev Cloudflare zone, pointing at this host like `api.i3x.dev`. The Nginx site uses the host's Cloudflare origin certificate. It names `*.cesmii.net`, which Cloudflare accepts in the zone's "Full" (non-strict) SSL mode, as for `api.i3x.dev`.
+
+## Verify
+
+```sh
+H=https://opcua.i3x.dev
+curl -s $H/ | head -20                                   # status: all three servers "ready in …"
 curl -s $H/cesmii/v1/info                                # … "update":{"current":false …
 curl -s $H/i3x2ua/v1/info; curl -s $H/uns/v1/info
 curl -s -X PUT -H 'Content-Type: application/json' $H/cesmii/v1/objects/value -d '{"updates":[]}'   # → 501 read-only
 curl -s -o /dev/null -w '%{http_code}\n' $H/_switch/uns  # → 403
-curl -s --max-time 3 http://<server>:8081/v1/info || echo "8081 closed (good)"
 ```
 
-In **i3X Explorer**, add `http://<server>:8084/cesmii/v1`, `…/i3x2ua/v1` and `…/uns/v1`. `docs/WALKTHROUGH.md` is the guided tour.
+In **i3X Explorer** (desktop, or https://explorer.i3x.dev), add `https://opcua.i3x.dev/cesmii/v1`, `…/i3x2ua/v1` and `…/uns/v1`. `docs/WALKTHROUGH.md` is the guided tour. Conformance: `node bin/i3x-test.js run https://opcua.i3x.dev/cesmii/v1` (or the suite's web UI at https://conformance.i3x.dev).
 
-Optional, from a machine with the conformance suite: `node bin/i3x-test.js run http://<server>:8084/cesmii/v1`.
-
-## 7. Operate
+## Operate
 
 | Task | How |
 |---|---|
-| Logs | `journalctl -u i3x-on-opc`, plus each gateway's log in `compare/logs/<name>.log` |
-| Restart | `systemctl restart i3x-on-opc`. The simulation starts over (seeded, so it's reproducible); history is in memory only |
-| Stop | `systemctl stop i3x-on-opc`. It sends SIGINT; the launcher stops each process group and runs `docker rm -f` on the container, the same as Ctrl-C |
-| Status table | `cd /opt/i3x-on-OPC && sudo -u i3x ./start.sh status` |
-| Change the gateway behind `/v1` | edit `active:` in `compare/gateways.yaml`; it's picked up live (`/_switch` is disabled) |
-| Simulation settings | `.env` (`SIM_SPEED`, `SIM_SEED`, `SIM_HISTORY`, `SIM_FAULTS`), then restart |
-| Update | `sudo -u i3x git pull` (or fetch a new bundle), `sudo -u i3x npm ci`, then restart. Re-copy the unit only if `deploy/i3x-on-opc.service` changed, and re-apply your edits |
-| Uninstall | `systemctl disable --now i3x-on-opc && rm /etc/systemd/system/i3x-on-opc.service && systemctl daemon-reload`; remove the firewall rules |
+| Logs | `journalctl -u i3x-on-ua -f`, plus each server's log in `compare/logs/<name>.log` |
+| Restart | `sudo systemctl restart i3x-on-ua`. The simulation starts over (seeded, so reproducible); history is in memory only |
+| Stop | `sudo systemctl stop i3x-on-ua`. The launcher stops each process group and removes the container, the same as Ctrl-C |
+| Status table | `cd /var/www/apps/i3x-on-UA && ./start.sh status` |
+| Deploy log | cron mail for user `cesmii`; or run `deploy/deploy.sh` by hand |
+| Change the server behind `/v1` | edit `active:` in `compare/gateways.yaml` and push (`/_switch` is disabled) |
+| Simulation settings | `.env` on the server (`SIM_SPEED`, `SIM_SEED`, `SIM_HISTORY`, `SIM_FAULTS`), then restart |
+| Unit changed in git | `sudo cp deploy/i3x-on-ua.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl restart i3x-on-ua` (deploy.sh doesn't re-install the unit) |
+| Uninstall | remove the cron line; `sudo systemctl disable --now i3x-on-ua`; delete the unit, the Nginx site and symlink (reload Nginx), and the `docker0` ufw rule |
 
-## 8. Troubleshooting
+## Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
-| `front door port :8084 is already in use` | Something else holds the port: set `FRONT_DOOR_PORT` (§4) |
-| `node: command not found` / exit 127 | `PATH=` in the unit doesn't include node's directory |
-| i3x2ua `docker run failed` / `permission denied … docker.sock` | The user isn't in the `docker` group (re-login doesn't apply to services: `systemctl restart`) or Docker isn't running |
-| i3x2ua times out after 240 s | Missing `docker0` firewall rule (§5), or the image pull is blocked |
-| Explorer can't connect | The 8084 firewall rule, or a cloud provider's security group in front of the host |
-| SSE subscriptions stall behind a proxy | The proxy buffers: in Nginx set `proxy_buffering off` for `/…/subscriptions/stream` |
-
-**Nginx later (D8: TLS and auth).** Proxy `443 → http://127.0.0.1:8084`, turn buffering off for the stream endpoints, add authentication (`/info` should stay open), then remove the 8084 firewall rule.
+| `front door port :8084 is already in use` | Another launcher is running (`pgrep -fl src/launch.ts`), or set `FRONT_DOOR_PORT` in the unit |
+| i3x2ua `permission denied … docker.sock` | The unit's user isn't in the `docker` group, or Docker isn't running |
+| i3x2ua times out after 240 s | The `docker0` → 4840 ufw rule is missing, or the image pull (ghcr.io) is blocked |
+| 444 / connection closed on opcua.i3x.dev | The request didn't come through Cloudflare (`$from_cloudflare`), or the DNS record isn't proxied |
+| SSE subscriptions stall | Proxy buffering: the Nginx site sets `proxy_buffering off`; check Cloudflare isn't caching the path |
+| Push didn't deploy | `deploy.sh` by hand shows why: a failed `git pull` (local changes in the checkout?) or `sudo -n` refused |

@@ -35,6 +35,11 @@ interface Config {
 function loadConfig(): Config {
   const raw = parse(fs.readFileSync(CONFIG, "utf8")) as Config;
   const expand = (s: string) => s.replace(/\$\{opcua\.(\w+)\}/g, (_, k) => (raw.opcua as unknown as Record<string, string>)[k] ?? "").replace(/^~(?=\/)/, os.homedir());
+  // per-host port override: COMPARE_PORT_<NAME>=8085 (e.g. a server where the gateway's default port is taken)
+  for (const [name, g] of Object.entries(raw.gateways)) {
+    const v = process.env[`COMPARE_PORT_${name.toUpperCase()}`];
+    if (v) g.port = Number(v);
+  }
   // ${opcua.*} and ${port} (the gateway's own port) are expanded in env values, so each port is set in one place
   for (const g of Object.values(raw.gateways)) for (const k of Object.keys(g.env ?? {})) g.env![k] = expand(String(g.env![k])).replace(/\$\{port\}/g, String(g.port));
   raw.conformance.suite = expand(raw.conformance.suite);

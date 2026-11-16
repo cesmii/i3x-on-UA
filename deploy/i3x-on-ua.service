@@ -1,22 +1,26 @@
-# systemd unit: the whole i3x-on-OPC demo (plant + cesmii + i3x2ua + uns + front door :8084), read-only.
-# Install: see deploy/README.md. Edit the three marked lines (User, WorkingDirectory, PATH) first.
+# systemd unit: the whole i3X-over-OPC-UA demo (plant + cesmii + i3x2ua + uns + front door :8084), read-only.
+# Production: admin.cesmii.net, served as https://opcua.i3x.dev (Cloudflare → Nginx → 127.0.0.1:8084).
+# Install and update flow: deploy/README.md. deploy/deploy.sh (cron) restarts it when a new commit lands.
 
 [Unit]
-Description=i3X over OPC UA demo (virtual beverage factory + i3X gateways)
-Documentation=file:///opt/i3x-on-OPC/deploy/README.md
+Description=i3X over OPC UA demo (virtual beverage factory + three i3X servers)
+Documentation=https://github.com/cesmii/i3x-on-UA/blob/main/deploy/README.md
 After=network-online.target docker.service
 Wants=network-online.target docker.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-# EDIT: an unprivileged user in the `docker` group, and the checkout it owns
-User=i3x
-WorkingDirectory=/opt/i3x-on-OPC
-# EDIT: put the directory holding `node` (Node 24) first; systemd doesn't load nvm/.bashrc
+# A user in the `docker` group that owns the checkout
+User=cesmii
+WorkingDirectory=/var/www/apps/i3x-on-UA
+# Node 24 is /usr/bin/node on this host; systemd doesn't load nvm/.bashrc
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=NODE_ENV=production
-# Front door port (default 8084 from compare/gateways.yaml); change it here if 8084 is taken on this host
+# Front door (the only thing Nginx proxies to). 8080 and 8081 are taken on this host by the i3X demo servers,
+# so our gateway moves from its default 8081 to 8085.
 Environment=FRONT_DOOR_PORT=8084
+Environment=COMPARE_PORT_CESMII=8085
 # Public demo: refuse writes everywhere (front door) and in our gateway (also /info capabilities.update.current=false)
 Environment=COMPARE_READ_ONLY=1
 Environment=GATEWAY_READ_ONLY=1
@@ -28,7 +32,7 @@ KillMode=mixed
 KillSignal=SIGINT
 TimeoutStartSec=300
 TimeoutStopSec=45
-Restart=on-failure
+Restart=always
 RestartSec=10
 
 # Light hardening (it writes only inside the checkout: compare/logs, server/pki)
