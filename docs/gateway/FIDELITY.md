@@ -38,6 +38,8 @@ Counts are for Line 1.
 
 | Loss | Count | Where it's described | Example (cesmii elementId suffix after `;s=`) | Audit rule |
 |---|---|---|---|---|
+| **[switch `singleRoot`]** Top-level OPC UA Objects placed under one root that has no reference to them *(2026-11-16)* | 9 | **O** `parent` (`synthesized`); `metadata.opcua.parentReference` says "none (synthesized …)" | `Personnel`, `Orders`, `Machines` (under `DemoBeverageCo`) | `hierarchy.synthesizedParent` (any i3X `parentId` without an OPC UA hierarchical reference behind it) |
+| **[switch `singleRoot`]** The root Object re-typed to `gateway:Enterprise` *(2026-11-16)* | 1 | **O** `typeDefinition` (`typeChanged`); **T** `gateway:Enterprise` says `synthesized` and repeats its OPC UA type's own notes (it reuses that schema); `metadata.sourceTypeId` stays the OPC UA type | `DemoBeverageCo` (OPC UA `ISA95:EquipmentType`) | `type.typeChanged` (i3X type not a projection of the node's OPC UA TypeDefinition) |
 | Node reached by several hierarchical paths; i3X allows one parent | 63 | **O** `parent` (`multiPath`) + `metadata.opcua.otherParents`; the extra paths are graph edges whose **R** says `multiPath` | `FL-401` (also under `Machines`), `FL-401/Identification` (also under `MachineryBuildingBlocks`) | `hierarchy.multiPath`, `relationshipType.multiPath` |
 | Symmetric hierarchical `ConnectsTo` is topology, not containment | 23 refs | **R** `DI:ConnectsTo` `semantics` | `FL-401/Ports/BeverageIn` | `ref.ConnectsTo`, `relationshipType.symmetricHierarchical` |
 | Material flow synthesized from ports (not an OPC UA reference) | 2 types | **R** `FlowsTo`/`FedBy` `relationship` (`synthesized`) | `T-101` → `FlowsTo` | `relationshipType.synthesized` |
@@ -78,6 +80,8 @@ Counts are for Line 1.
 | NaN/±Inf → `null` | 87 | **N** `nonFinite` | `BL-301/RatedFlow` | `value.nonFinite` |
 | One timestamp: Source, else Server; picoseconds dropped | 455 | **N** `timestamps` | any leaf | `value.timestamps` |
 | StatusCode → quality string (switch `quality`); branch quality aggregated | 455 | **N** `quality` | `PT-902/SignalSet/Pressure/AnalogSignal` under `SIM_FAULTS` | `value.quality` |
+
+**Audit after the singleRoot switch (2026-11-16, compare config):** 51 rules, 6,846 checks, 0 gaps. Its first run found one gap: `gateway:Enterprise` didn't repeat `ISA95:EquipmentType`'s placeholder note although it reuses that schema. It now carries the source type's notes.
 
 ## Found and fixed in this pass
 

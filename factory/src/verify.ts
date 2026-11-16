@@ -6,12 +6,11 @@
 import path from "node:path";
 import { type AddressSpace, type BaseNode, type UAObject, type UAVariable } from "node-opcua-address-space";
 import { BrowseDirection, NodeClass } from "node-opcua";
-import { loadBase, nsIndex, NSU, ROOT } from "./lib/load.js";
+import { FACTORY_NODESETS, loadBase, nsIndex, NSU, ROOT } from "./lib/load.js";
 import { allEquipment, loadPlant } from "./plant.js";
 
-const OUT = path.join(ROOT, "nodesets/factory/BeverageFactory.NodeSet2.xml");
 const plant = loadPlant(path.resolve(process.argv[2] ?? path.join(ROOT, "factory/plant/line1.yaml")));
-const as: AddressSpace = await loadBase([OUT]);
+const as: AddressSpace = await loadBase(FACTORY_NODESETS);
 const F = nsIndex(as, plant.namespace);
 const node = (s: string) => as.findNode(`ns=${F};s=${s}`);
 const fails: string[] = [];
@@ -20,7 +19,7 @@ const check = (ok: unknown, msg: string) => { checks++; if (!ok) fails.push(msg)
 const typeOf = (n: BaseNode | null) => (n as UAObject | null)?.typeDefinitionObj?.browseName.name;
 /** ReferenceType by BrowseName, searching ns0 then the companion namespaces (non-ns0 types can't be passed by name). */
 const R = (name: string) => {
-  for (const uri of Object.values(NSU)) {
+  for (const uri of [...Object.values(NSU), plant.namespace]) {
     const i = as.getNamespaceIndex(uri);
     const t = i >= 0 ? as.findReferenceType(name, i) : null;
     if (t) return t.nodeId;
@@ -99,6 +98,53 @@ for (const [from, to] of plant.links) {
   check(refsTo(a, "ConnectsTo", b) || refsTo(b, "ConnectsTo", a), `ConnectsTo ${from} → ${to}`);
   check(val(kid(a, "Direction")) === 1 && val(kid(b, "Direction")) === 0, `${from} → ${to}: Direction Out → In`);
   check(val(kid(a, "Category")) === val(kid(b, "Category")), `${from} → ${to}: same Category`);
+}
+
+// personnel, materials, orders: own top-level hierarchies, linked to equipment only by graph references
+const eqOf = (ref: string) => node(ref);
+const isGraph = (refType: string) => {
+  const t = as.findNode(R(refType)) as unknown as { isSubtypeOf(t: unknown): boolean };
+  return t.isSubtypeOf(as.findReferenceType("NonHierarchicalReferences")) && !t.isSubtypeOf(as.findReferenceType("HierarchicalReferences"));
+};
+for (const r of ["Operates", "Consumes", "Produces", "StoredIn", "DispatchedTo", "DefinedByMaterialClass"]) check(isGraph(r), `${r} is a non-hierarchical ReferenceType`);
+for (const top of ["Personnel", "Materials", "Orders"]) check(node(top) && refsTo(as.rootFolder.objects, "Organizes", node(top)!), `${top} folder organized by Objects`);
+if (plant.personnel) for (const [id, p] of Object.entries(plant.personnel.persons)) {
+  const n = node(`Person/${id}`);
+  check(typeOf(n) === "PersonType", `person ${id} is a PersonType`);
+  if (!n) continue;
+  check(refsTo(n, "DefinedByPersonnelClass", node(`PersonnelClass/${p.class}`)!), `person ${id} DefinedByPersonnelClass ${p.class}`);
+  for (const e of p.operates ?? []) check(refsTo(n, "Operates", eqOf(e)!), `person ${id} Operates ${e}`);
+}
+if (plant.materials) {
+  for (const [id, d] of Object.entries(plant.materials.definitions)) {
+    const n = node(`Material/${id}`);
+    check(typeOf(n) === "MaterialDefinitionType" && refsTo(n!, "DefinedByMaterialClass", node(`MaterialClass/${d.class}`)!), `material ${id} DefinedByMaterialClass ${d.class}`);
+  }
+  for (const [id, l] of Object.entries(plant.materials.lots)) {
+    const n = node(`Lot/${id}`);
+    check(typeOf(n) === "MaterialLotType", `lot ${id} is a MaterialLotType`);
+    if (!n) continue;
+    check(refsTo(n, "DefinedByMaterialDefinition", node(`Material/${l.definition}`)!), `lot ${id} DefinedByMaterialDefinition`);
+    const q = kid(n, "Quantity");
+    check(Math.abs(val(q) - l.quantity[0]) < 1e-9 && val(kid(q, "EngineeringUnits"))?.unitId, `lot ${id}: Quantity + EngineeringUnits`);
+    if (l.storedIn) check(refsTo(n, "StoredIn", eqOf(l.storedIn)!), `lot ${id} StoredIn ${l.storedIn}`);
+    for (const e of l.consumedBy ?? []) check(refsTo(eqOf(e)!, "Consumes", n), `${e} Consumes lot ${id}`);
+    for (const e of l.producedBy ?? []) check(refsTo(eqOf(e)!, "Produces", n), `${e} Produces lot ${id}`);
+  }
+}
+for (const [wrId, wr] of Object.entries(plant.orders ?? {})) {
+  const w = node(`Orders/${wrId}`);
+  check(typeOf(w) === "WorkRequestType" && refsTo(node("Orders")!, "Organizes", w!), `work request ${wrId} under Orders`);
+  for (const [joId, jo] of Object.entries(wr.jobOrders)) {
+    const j = node(`Orders/${wrId}/${joId}`);
+    check(typeOf(j) === "JobOrderType" && w && refsTo(w, "HasComponent", j!), `job order ${joId} is a component of ${wrId}`);
+    if (!j) continue;
+    check(val(kid(j, "JobOrderID")) === joId && val(kid(j, "State")), `job order ${joId}: JobOrderID + State`);
+    check(val(kid(j, "PlannedQuantity")) === jo.plannedQuantity[0] && val(kid(kid(j, "PlannedQuantity"), "EngineeringUnits"))?.unitId, `job order ${joId}: PlannedQuantity + unit`);
+    check(refsTo(j, "DispatchedTo", eqOf(jo.dispatchedTo)!), `job order ${joId} DispatchedTo ${jo.dispatchedTo}`);
+    for (const l of jo.consumes ?? []) check(refsTo(j, "Consumes", node(`Lot/${l}`)!), `job order ${joId} Consumes ${l}`);
+    for (const l of jo.produces ?? []) check(refsTo(j, "Produces", node(`Lot/${l}`)!), `job order ${joId} Produces ${l}`);
+  }
 }
 
 // no variable left with several aggregating parents in our namespace (vendor shared-node repair)

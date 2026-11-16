@@ -184,6 +184,14 @@ for (const n of model) {
   // hierarchy: more than one hierarchical (non-Property) path in
   const parents = n.incoming.filter((x) => !isPropRef(x.type, n.typeDefinition) && !isA(x.type, R.HasEventSource) && !refNames.get(x.type)?.symmetric && nodes.get(x.from)?.role === "candidate");
   if (parents.length > 1) check("hierarchy.multiPath", "Node reached by several hierarchical paths (i3X: one parent)", n.id, noted(o, ["parent"], ["object"]));
+  // an i3X parent with no OPC UA hierarchical reference behind it (e.g. the singleRoot switch) must say so
+  if (o.parentId && !n.incoming.some((x) => x.from === o.parentId && isA(x.type, R.Hier)))
+    check("hierarchy.synthesizedParent", "i3X parentId not backed by an OPC UA hierarchical reference: noted", n.id, noted(o, ["parent"], ["object"]));
+  // an Object presented with a type other than its OPC UA TypeDefinition must say so
+  //   (its i3X type must be the projection of an OPC UA namespace, i.e. a "…?projection=i3X" namespace, with the same source type)
+  const it = types.get(o.typeElementId);
+  if (n.nodeClass === "Object" && n.typeDefinition && (it?.sourceTypeId !== n.typeDefinition || !String(it?.namespaceUri ?? "").endsWith("?projection=i3X")))
+    check("type.typeChanged", "i3X typeElementId is not the OPC UA TypeDefinition: noted", n.id, noted(o, ["typeDefinition"], ["object"]));
   const methods = n.refs.filter((r) => r.nodeClass === "Method");
   if (methods.length) {
     check("methods.listed", "Methods → metadata.opcua.methods", n.id, methods.every((m) => (o.metadata?.opcua?.methods ?? []).some((x: string) => x.endsWith(m.browseName))) ? "metadata" : null);

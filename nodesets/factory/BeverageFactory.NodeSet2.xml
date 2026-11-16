@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:ns2="http://www.OPCFoundation.org/UA/2013/01/ISA95/Type.xsd" xmlns:ns3="http://opcfoundation.org/UA/Pumps/Type.xsd" xmlns:ns4="http://opcfoundation.org/UA/PADIM/Type.xsd" xmlns:ns5="http://opcfoundation.org/UA/DI/Type.xsd" xmlns:ns6="http://opcfoundation.org/UA/IA/Type.xsd" xmlns:ns7="http://opcfoundation.org/UA/Machinery/Type.xsd" xmlns:ns8="https://cesmii.net/profiles/AcmeMixTank/Type.xsd" xmlns:ns9="http://opcfoundation.org/UA/Machinery/ProcessValues/Type.xsd" xmlns:ns10="http://opcfoundation.org/UA/PackML/Type.xsd" xmlns:ns11="http://opcfoundation.org/UA/Dictionary/IRDI/Type.xsd" xmlns:ns1="https://cesmii.net/i3x-demo/BeverageFactory/Type.xsd">
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:ns2="http://www.OPCFoundation.org/UA/2013/01/ISA95/Type.xsd" xmlns:ns3="http://opcfoundation.org/UA/Pumps/Type.xsd" xmlns:ns4="http://opcfoundation.org/UA/PADIM/Type.xsd" xmlns:ns5="http://opcfoundation.org/UA/DI/Type.xsd" xmlns:ns6="http://opcfoundation.org/UA/IA/Type.xsd" xmlns:ns7="http://opcfoundation.org/UA/Machinery/Type.xsd" xmlns:ns8="https://cesmii.net/profiles/AcmeMixTank/Type.xsd" xmlns:ns9="http://opcfoundation.org/UA/Machinery/ProcessValues/Type.xsd" xmlns:ns10="http://opcfoundation.org/UA/PackML/Type.xsd" xmlns:ns11="https://cesmii.net/i3x-demo/ISA95Operations/Type.xsd" xmlns:ns12="http://opcfoundation.org/UA/Dictionary/IRDI/Type.xsd" xmlns:ns1="https://cesmii.net/i3x-demo/BeverageFactory/Type.xsd">
     <NamespaceUris>
         <Uri>https://cesmii.net/i3x-demo/BeverageFactory/</Uri>
         <Uri>http://www.OPCFoundation.org/UA/2013/01/ISA95</Uri>
@@ -11,6 +11,7 @@
         <Uri>https://cesmii.net/profiles/AcmeMixTank</Uri>
         <Uri>http://opcfoundation.org/UA/Machinery/ProcessValues/</Uri>
         <Uri>http://opcfoundation.org/UA/PackML/</Uri>
+        <Uri>https://cesmii.net/i3x-demo/ISA95Operations/</Uri>
         <Uri>http://opcfoundation.org/UA/Dictionary/IRDI</Uri>
     </NamespaceUris>
     <Models>
@@ -25,6 +26,7 @@
             <RequiredModel ModelUri="https://cesmii.net/profiles/AcmeMixTank" Version="1.01" PublicationDate="2026-11-05T00:00:00.000Z"/>
             <RequiredModel ModelUri="http://opcfoundation.org/UA/Machinery/ProcessValues/" Version="1.00.0" PublicationDate="2023-05-01T00:00:00.000Z"/>
             <RequiredModel ModelUri="http://opcfoundation.org/UA/PackML/" Version="1.01" PublicationDate="2020-10-08T00:00:00.000Z"/>
+            <RequiredModel ModelUri="https://cesmii.net/i3x-demo/ISA95Operations/" Version="1.0.0" PublicationDate="2026-11-16T00:00:00.000Z"/>
             <RequiredModel ModelUri="http://opcfoundation.org/UA/Dictionary/IRDI" Version="1.00" PublicationDate="2020-02-04T00:00:00.000Z"/>
         </Model>
     </Models>
@@ -32,7 +34,16 @@
         <Alias Alias="10:HasStopReason">ns=10;i=25</Alias>
         <Alias Alias="10:PackMLAlarmDataType">ns=10;i=15</Alias>
         <Alias Alias="10:PackMLCountDataType">ns=10;i=14</Alias>
+        <Alias Alias="11:Consumes">ns=11;i=4003</Alias>
+        <Alias Alias="11:DefinedByMaterialClass">ns=11;i=4001</Alias>
+        <Alias Alias="11:DispatchedTo">ns=11;i=4006</Alias>
+        <Alias Alias="11:Operates">ns=11;i=4002</Alias>
+        <Alias Alias="11:Produces">ns=11;i=4004</Alias>
+        <Alias Alias="11:StoredIn">ns=11;i=4005</Alias>
+        <Alias Alias="2:CDTIdentifier">ns=2;i=4777</Alias>
         <Alias Alias="2:DefinedByEquipmentClass">ns=2;i=4919</Alias>
+        <Alias Alias="2:DefinedByMaterialDefinition">ns=2;i=5301</Alias>
+        <Alias Alias="2:DefinedByPersonnelClass">ns=2;i=4917</Alias>
         <Alias Alias="2:HasISA95Attribute">ns=2;i=4713</Alias>
         <Alias Alias="2:HasISA95ClassProperty">ns=2;i=4910</Alias>
         <Alias Alias="2:ISA95EquipmentElementLevelEnum">ns=2;i=4871</Alias>
@@ -41,6 +52,7 @@
         <Alias Alias="5:ConnectsTo">ns=5;i=6030</Alias>
         <Alias Alias="5:DeviceHealthEnumeration">ns=5;i=6244</Alias>
         <Alias Alias="Argument">i=296</Alias>
+        <Alias Alias="BaseDataType">i=24</Alias>
         <Alias Alias="Boolean">i=1</Alias>
         <Alias Alias="Byte">i=3</Alias>
         <Alias Alias="DateTime">i=13</Alias>
@@ -66,6 +78,7 @@
         <Alias Alias="UInt16">i=5</Alias>
         <Alias Alias="UInt32">i=7</Alias>
         <Alias Alias="UInteger">i=28</Alias>
+        <Alias Alias="UtcTime">i=294</Alias>
     </Aliases>
 <!--ReferenceTypes-->
 <!--ObjectTypes-->
@@ -727,6 +740,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=FCV-302</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=FT-301</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=FT-302</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SYR-2611-16</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=2;i=5040</Reference>
         </References>
@@ -1560,13 +1574,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN146#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN146#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -1640,7 +1654,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -1722,13 +1736,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -1802,7 +1816,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -2014,13 +2028,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN146#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN146#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -2094,7 +2108,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -2176,13 +2190,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -2256,7 +2270,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -2749,6 +2763,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=CB-301/Ports</Reference>
             <Reference ReferenceType="2:HasISA95ClassProperty">ns=1;s=CB-301/RatedFlow</Reference>
             <Reference ReferenceType="2:DefinedByEquipmentClass">ns=1;s=Class/Carbonator</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CO2-2611-01</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=PCV-311</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=PT-304</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
@@ -3378,13 +3393,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN146#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN146#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -3458,7 +3473,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABN145#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABN145#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -3540,13 +3555,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -3620,7 +3635,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -3891,6 +3906,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=CK-404/SetUnitMode</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=CK-404/Status</Reference>
             <Reference ReferenceType="HasProperty">ns=1;s=CK-404/TagID</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CSE-2611-09</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/BottlingLine1</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=10;i=6</Reference>
@@ -5221,6 +5237,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=CP-402/SetUnitMode</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=CP-402/Status</Reference>
             <Reference ReferenceType="HasProperty">ns=1;s=CP-402/TagID</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CAP-2611-05</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/BottlingLine1</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=10;i=6</Reference>
@@ -7968,85 +7985,85 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK976#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK976#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK977#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK977#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK978#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK978#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK979#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK979#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK980#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK980#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK981#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK981#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK982#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK982#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK983#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK983#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK985#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK985#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK986#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK986#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK987#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK987#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK988#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK988#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK989#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK989#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK993#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK993#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK994#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK994#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK995#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK995#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK996#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK996#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK997#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK997#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK998#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK998#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK999#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK999#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL000#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL000#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL001#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL001#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL002#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL002#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL003#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL003#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL004#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL004#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -8528,7 +8545,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -9348,85 +9365,85 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK976#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK976#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK977#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK977#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK978#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK978#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK979#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK979#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK980#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK980#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK981#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK981#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK982#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK982#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK983#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK983#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK985#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK985#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK986#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK986#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK987#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK987#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK988#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK988#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK989#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK989#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK993#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK993#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK994#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK994#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK995#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK995#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK996#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK996#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK997#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK997#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK998#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK998#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK999#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK999#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL000#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL000#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL001#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL001#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL002#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL002#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL003#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL003#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL004#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL004#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -9908,7 +9925,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -10121,13 +10138,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -10201,7 +10218,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -10290,6 +10307,8 @@
         <DisplayName>Bottling Line 1</DisplayName>
         <Description>This ObjectType defines a piece of equipment</Description>
         <References>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/FG-2611-0042</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/FG-2611-0043</Reference>
             <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Plant1/BottlingLine1/EquipmentLevel</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=2;i=5040</Reference>
         </References>
@@ -10321,6 +10340,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=FL-401/SetUnitMode</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=FL-401/Status</Reference>
             <Reference ReferenceType="HasProperty">ns=1;s=FL-401/TagID</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PET-2611-11</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/BottlingLine1</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=10;i=6</Reference>
@@ -11179,6 +11199,7 @@
             <Reference ReferenceType="HasComponent">ns=1;s=LB-403/SetUnitMode</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=LB-403/Status</Reference>
             <Reference ReferenceType="HasProperty">ns=1;s=LB-403/TagID</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/LBL-2611-03</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/BottlingLine1</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=7;i=1001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=10;i=6</Reference>
@@ -11974,6 +11995,7 @@
     <UAObject NodeId="ns=1;s=PZ-405" BrowseName="1:PZ-405">
         <DisplayName>PZ-405 Palletizer</DisplayName>
         <References>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PLT-2611-02</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=PZ-405/Admin</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=PZ-405/BaseStateMachine</Reference>
             <Reference ReferenceType="HasAddIn">ns=1;s=PZ-405/Identification</Reference>
@@ -13903,6 +13925,7 @@
         <References>
             <Reference ReferenceType="HasTypeDefinition">ns=8;i=1000</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=DT-201</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SUG-2611-07</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/SyrupRoom</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=SD-201/Equipment</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=SD-201/Identification</Reference>
@@ -16852,6 +16875,8 @@
         <References>
             <Reference ReferenceType="HasTypeDefinition">ns=8;i=1000</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=DT-202</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CNC-2611-02</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/SYR-2611-16</Reference>
             <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Plant1/SyrupRoom</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=T-202/Equipment</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=T-202/Identification</Reference>
@@ -17876,13 +17901,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -17956,7 +17981,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -21014,13 +21039,13 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL148#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL148#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -21094,7 +21119,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL147#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL147#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -21777,85 +21802,85 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK976#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK976#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK977#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK977#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK978#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK978#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK979#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK979#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK980#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK980#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK981#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK981#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK982#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK982#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK983#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK983#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK985#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK985#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK986#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK986#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK987#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK987#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK988#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK988#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK989#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK989#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK993#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK993#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK994#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK994#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK995#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK995#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK996#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK996#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK997#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK997#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK998#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK998#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK999#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK999#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL000#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL000#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL001#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL001#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL002#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL002#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL003#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL003#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABL004#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABL004#001</Identifier>
                 </NodeId>
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABI407#004</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABI407#004</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -22337,7 +22362,7 @@
         <Value>
             <ListOfNodeId xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
                 <NodeId>
-                    <Identifier>ns=11;s=0112/2///61987#ABK984#001</Identifier>
+                    <Identifier>ns=12;s=0112/2///61987#ABK984#001</Identifier>
                 </NodeId>
             </ListOfNodeId>
         </Value>
@@ -23285,4 +23310,2164 @@
         </References>
     </UAObject>
 <!--Object - 1:EquipmentClasses }}}} -->
+<!--Object - 1:CAP-2611-05 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/CAP-2611-05" BrowseName="1:CAP-2611-05">
+        <DisplayName>CAP-2611-05 Closure PCO 1881 28 mm</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CAP-2611-05/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CAP-2611-05/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Closure</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/CAP-2611-05/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/CAP-2611-05" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/CAP-2611-05/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>150000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CAP-2611-05/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/CAP-2611-05/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CAP-2611-05/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/CAP-2611-05" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:CAP-2611-05 }}}} -->
+<!--Object - 1:CNC-2611-02 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/CNC-2611-02" BrowseName="1:CNC-2611-02">
+        <DisplayName>CNC-2611-02 Cola Flavor Concentrate K-7</DisplayName>
+        <References>
+            <Reference ReferenceType="11:StoredIn">ns=1;s=ConcentrateSupply</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CNC-2611-02/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CNC-2611-02/Status</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CNC-2611-02/StorageLocation</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/ColaConcentrate</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/CNC-2611-02/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/CNC-2611-02" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/CNC-2611-02/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>1200</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CNC-2611-02/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/CNC-2611-02/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4933453</UnitId>
+                        <DisplayName>
+                            <Text>kg</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>kilogram</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CNC-2611-02/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/CNC-2611-02" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CNC-2611-02/StorageLocation" BrowseName="2:StorageLocation" ParentNodeId="ns=1;s=Lot/CNC-2611-02" DataType="2:CDTIdentifier">
+        <DisplayName>StorageLocation</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>ConcentrateSupply</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:CNC-2611-02 }}}} -->
+<!--Object - 1:CO2-2611-01 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/CO2-2611-01" BrowseName="1:CO2-2611-01">
+        <DisplayName>CO2-2611-01 Food-Grade CO2 (ISBT)</DisplayName>
+        <References>
+            <Reference ReferenceType="11:StoredIn">ns=1;s=CO2-901</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CO2-2611-01/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CO2-2611-01/Status</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CO2-2611-01/StorageLocation</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/CO2</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/CO2-2611-01/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/CO2-2611-01" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/CO2-2611-01/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>21</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CO2-2611-01/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/CO2-2611-01/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5525061</UnitId>
+                        <DisplayName>
+                            <Text>t</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>tonne</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CO2-2611-01/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/CO2-2611-01" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CO2-2611-01/StorageLocation" BrowseName="2:StorageLocation" ParentNodeId="ns=1;s=Lot/CO2-2611-01" DataType="2:CDTIdentifier">
+        <DisplayName>StorageLocation</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>CO2-901</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:CO2-2611-01 }}}} -->
+<!--Object - 1:CSE-2611-09 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/CSE-2611-09" BrowseName="1:CSE-2611-09">
+        <DisplayName>CSE-2611-09 Shrink Tray 24 × 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CSE-2611-09/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/CSE-2611-09/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Case</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/CSE-2611-09/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/CSE-2611-09" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/CSE-2611-09/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>6000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CSE-2611-09/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/CSE-2611-09/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/CSE-2611-09/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/CSE-2611-09" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:CSE-2611-09 }}}} -->
+<!--Object - 1:FG-2611-0042 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/FG-2611-0042" BrowseName="1:FG-2611-0042">
+        <DisplayName>FG-2611-0042 Cola 500 mL PET</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/FG-2611-0042/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/FG-2611-0042/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Cola500</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0042/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/FG-2611-0042" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/FG-2611-0042/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0042/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/FG-2611-0042/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0042/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/FG-2611-0042" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>InProduction</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:FG-2611-0042 }}}} -->
+<!--Object - 1:FG-2611-0043 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/FG-2611-0043" BrowseName="1:FG-2611-0043">
+        <DisplayName>FG-2611-0043 Cola 500 mL PET</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/FG-2611-0043/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/FG-2611-0043/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Cola500</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0043/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/FG-2611-0043" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/FG-2611-0043/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0043/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/FG-2611-0043/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/FG-2611-0043/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/FG-2611-0043" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Planned</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:FG-2611-0043 }}}} -->
+<!--Object - 1:LBL-2611-03 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/LBL-2611-03" BrowseName="1:LBL-2611-03">
+        <DisplayName>LBL-2611-03 Wrap-Around Label Cola 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/LBL-2611-03/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/LBL-2611-03/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Label</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/LBL-2611-03/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/LBL-2611-03" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/LBL-2611-03/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>100000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/LBL-2611-03/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/LBL-2611-03/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/LBL-2611-03/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/LBL-2611-03" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:LBL-2611-03 }}}} -->
+<!--Object - 1:PET-2611-11 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/PET-2611-11" BrowseName="1:PET-2611-11">
+        <DisplayName>PET-2611-11 PET Bottle 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/PET-2611-11/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/PET-2611-11/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/PETBottle</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/PET-2611-11/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/PET-2611-11" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/PET-2611-11/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>120000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/PET-2611-11/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/PET-2611-11/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/PET-2611-11/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/PET-2611-11" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:PET-2611-11 }}}} -->
+<!--Object - 1:PLT-2611-02 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/PLT-2611-02" BrowseName="1:PLT-2611-02">
+        <DisplayName>PLT-2611-02 EUR Pallet</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/PLT-2611-02/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/PLT-2611-02/Status</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/Pallet</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/PLT-2611-02/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/PLT-2611-02" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/PLT-2611-02/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>100</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/PLT-2611-02/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/PLT-2611-02/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/PLT-2611-02/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/PLT-2611-02" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:PLT-2611-02 }}}} -->
+<!--Object - 1:SUG-2611-07 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/SUG-2611-07" BrowseName="1:SUG-2611-07">
+        <DisplayName>SUG-2611-07 Granulated Sugar (EU 2)</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SUG-2611-07/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SUG-2611-07/Status</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SUG-2611-07/StorageLocation</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/GranulatedSugar</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="11:StoredIn">ns=1;s=SugarSupply</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/SUG-2611-07/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/SUG-2611-07" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/SUG-2611-07/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>25000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SUG-2611-07/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/SUG-2611-07/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4933453</UnitId>
+                        <DisplayName>
+                            <Text>kg</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>kilogram</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SUG-2611-07/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/SUG-2611-07" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SUG-2611-07/StorageLocation" BrowseName="2:StorageLocation" ParentNodeId="ns=1;s=Lot/SUG-2611-07" DataType="2:CDTIdentifier">
+        <DisplayName>StorageLocation</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>SugarSupply</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:SUG-2611-07 }}}} -->
+<!--Object - 1:SYR-2611-16 {{{{ -->
+    <UAObject NodeId="ns=1;s=Lot/SYR-2611-16" BrowseName="1:SYR-2611-16">
+        <DisplayName>SYR-2611-16 Cola Final Syrup</DisplayName>
+        <References>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SYR-2611-16/Quantity</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SYR-2611-16/Status</Reference>
+            <Reference ReferenceType="2:HasISA95Attribute">ns=1;s=Lot/SYR-2611-16/StorageLocation</Reference>
+            <Reference ReferenceType="2:DefinedByMaterialDefinition">ns=1;s=Material/FinalSyrup</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialLots</Reference>
+            <Reference ReferenceType="11:StoredIn">ns=1;s=T-202</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5232</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Lot/SYR-2611-16/Quantity" BrowseName="2:Quantity" ParentNodeId="ns=1;s=Lot/SYR-2611-16" DataType="BaseDataType">
+        <DisplayName>Quantity</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Lot/SYR-2611-16/Quantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>8</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SYR-2611-16/Quantity/EngineeringUnits" BrowseName="1:EngineeringUnits" ParentNodeId="ns=1;s=Lot/SYR-2611-16/Quantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SYR-2611-16/Status" BrowseName="2:Status" ParentNodeId="ns=1;s=Lot/SYR-2611-16" DataType="2:CDTIdentifier">
+        <DisplayName>Status</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>Released</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Lot/SYR-2611-16/StorageLocation" BrowseName="2:StorageLocation" ParentNodeId="ns=1;s=Lot/SYR-2611-16" DataType="2:CDTIdentifier">
+        <DisplayName>StorageLocation</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>T-202</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:SYR-2611-16 }}}} -->
+<!--Object - 1:CO2 {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/CO2" BrowseName="1:CO2">
+        <DisplayName>Food-Grade CO2 (ISBT)</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/ProcessGas</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:CO2 }}}} -->
+<!--Object - 1:Case {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/Case" BrowseName="1:Case">
+        <DisplayName>Shrink Tray 24 × 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Packaging</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Case }}}} -->
+<!--Object - 1:Closure {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/Closure" BrowseName="1:Closure">
+        <DisplayName>Closure PCO 1881 28 mm</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Packaging</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Closure }}}} -->
+<!--Object - 1:Cola500 {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/Cola500" BrowseName="1:Cola500">
+        <DisplayName>Cola 500 mL PET</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/FinishedGood</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Cola500 }}}} -->
+<!--Object - 1:ColaConcentrate {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/ColaConcentrate" BrowseName="1:ColaConcentrate">
+        <DisplayName>Cola Flavor Concentrate K-7</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Flavor</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:ColaConcentrate }}}} -->
+<!--Object - 1:FinalSyrup {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/FinalSyrup" BrowseName="1:FinalSyrup">
+        <DisplayName>Cola Final Syrup</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Intermediate</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:FinalSyrup }}}} -->
+<!--Object - 1:GranulatedSugar {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/GranulatedSugar" BrowseName="1:GranulatedSugar">
+        <DisplayName>Granulated Sugar (EU 2)</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Sweetener</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:GranulatedSugar }}}} -->
+<!--Object - 1:Label {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/Label" BrowseName="1:Label">
+        <DisplayName>Wrap-Around Label Cola 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Packaging</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Label }}}} -->
+<!--Object - 1:PETBottle {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/PETBottle" BrowseName="1:PETBottle">
+        <DisplayName>PET Bottle 500 mL</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Packaging</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:PETBottle }}}} -->
+<!--Object - 1:Pallet {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/Pallet" BrowseName="1:Pallet">
+        <DisplayName>EUR Pallet</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Packaging</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Pallet }}}} -->
+<!--Object - 1:SimpleSyrup {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/SimpleSyrup" BrowseName="1:SimpleSyrup">
+        <DisplayName>Simple Syrup 65 °Bx</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Intermediate</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:SimpleSyrup }}}} -->
+<!--Object - 1:TreatedWater {{{{ -->
+    <UAObject NodeId="ns=1;s=Material/TreatedWater" BrowseName="1:TreatedWater">
+        <DisplayName>Treated Water (RO permeate)</DisplayName>
+        <References>
+            <Reference ReferenceType="11:DefinedByMaterialClass">ns=1;s=MaterialClass/Water</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialDefinitions</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5219</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:TreatedWater }}}} -->
+<!--Object - 1:FinishedGood {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/FinishedGood" BrowseName="1:FinishedGood">
+        <DisplayName>Finished Good</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:FinishedGood }}}} -->
+<!--Object - 1:Flavor {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/Flavor" BrowseName="1:Flavor">
+        <DisplayName>Flavor Concentrate</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Flavor }}}} -->
+<!--Object - 1:Intermediate {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/Intermediate" BrowseName="1:Intermediate">
+        <DisplayName>Intermediate Product</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Intermediate }}}} -->
+<!--Object - 1:Packaging {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/Packaging" BrowseName="1:Packaging">
+        <DisplayName>Packaging Material</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Packaging }}}} -->
+<!--Object - 1:ProcessGas {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/ProcessGas" BrowseName="1:ProcessGas">
+        <DisplayName>Process Gas</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:ProcessGas }}}} -->
+<!--Object - 1:Sweetener {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/Sweetener" BrowseName="1:Sweetener">
+        <DisplayName>Sweetener</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Sweetener }}}} -->
+<!--Object - 1:Water {{{{ -->
+    <UAObject NodeId="ns=1;s=MaterialClass/Water" BrowseName="1:Water">
+        <DisplayName>Water</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials/MaterialClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5209</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Water }}}} -->
+<!--Object - 1:Materials {{{{ -->
+    <UAObject NodeId="ns=1;s=Materials" BrowseName="1:Materials">
+        <DisplayName>Materials</DisplayName>
+        <Description>ISA-95 material model (Part 2 §5.6): material classes, definitions and lots</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:MaterialClasses {{{{ -->
+    <UAObject NodeId="ns=1;s=Materials/MaterialClasses" BrowseName="1:MaterialClasses">
+        <DisplayName>Material Classes</DisplayName>
+        <Description>MaterialClassType instances</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:MaterialClasses }}}} -->
+<!--Object - 1:MaterialDefinitions {{{{ -->
+    <UAObject NodeId="ns=1;s=Materials/MaterialDefinitions" BrowseName="1:MaterialDefinitions">
+        <DisplayName>Material Definitions</DisplayName>
+        <Description>MaterialDefinitionType instances</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:MaterialDefinitions }}}} -->
+<!--Object - 1:MaterialLots {{{{ -->
+    <UAObject NodeId="ns=1;s=Materials/MaterialLots" BrowseName="1:MaterialLots">
+        <DisplayName>Material Lots</DisplayName>
+        <Description>MaterialLotType instances</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Materials</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:MaterialLots }}}} -->
+<!--Object - 1:Materials }}}} -->
+<!--Object - 1:Orders {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders" BrowseName="1:Orders">
+        <DisplayName>Orders</DisplayName>
+        <Description>ISA-95 work model (Part 4): work requests and their job orders</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:WR-2611-0042 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0042" BrowseName="1:WR-2611-0042">
+        <DisplayName>WR-2611-0042 Cola 500 mL PET, shift A</DisplayName>
+        <Description>An ISA-95 work request (Part 4): a production order, made up of the job orders that carry it out.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1001</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Orders</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/EndTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-10</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-20</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-30</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/WorkRequestID</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the work request produces</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Cola 500 mL PET, shift A</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+<!--Object - 1:JO-0042-10 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" BrowseName="1:JO-0042-10" ParentNodeId="ns=1;s=Orders/WR-2611-0042">
+        <DisplayName>JO-0042-10 Prepare final syrup</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CNC-2611-02</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SUG-2611-07</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/SYR-2611-16</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-10/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-10/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-10/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/SyrupRoom</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Prepare final syrup</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0042-10</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-10/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>13.4</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>1</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-10" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-SYRUP-COLA</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0042-10 }}}} -->
+<!--Object - 1:JO-0042-20 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" BrowseName="1:JO-0042-20" ParentNodeId="ns=1;s=Orders/WR-2611-0042">
+        <DisplayName>JO-0042-20 Blend and carbonate</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CO2-2611-01</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SYR-2611-16</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-20/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-20/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-20/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/BlendingCarbonation</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Blend and carbonate</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0042-20</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-20/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>80</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>1</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-20" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-BLEND-COLA</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0042-20 }}}} -->
+<!--Object - 1:JO-0042-30 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" BrowseName="1:JO-0042-30" ParentNodeId="ns=1;s=Orders/WR-2611-0042">
+        <DisplayName>JO-0042-30 Fill, cap, label and pack</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CAP-2611-05</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CSE-2611-09</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/FG-2611-0042</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/LBL-2611-03</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PET-2611-11</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PLT-2611-02</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-30/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-30/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0042/JO-0042-30/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/BottlingLine1</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Fill, cap, label and pack</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0042-30</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0042/JO-0042-30/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>160000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>1</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0042/JO-0042-30" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-PACK-500-24</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0042-30 }}}} -->
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>1</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>Aggregate of its job orders; OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0042/WorkRequestID" BrowseName="11:WorkRequestID" ParentNodeId="ns=1;s=Orders/WR-2611-0042" DataType="String">
+        <DisplayName>WorkRequestID</DisplayName>
+        <Description>Unique identifier of the work request</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WR-2611-0042</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:WR-2611-0042 }}}} -->
+<!--Object - 1:WR-2611-0043 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0043" BrowseName="1:WR-2611-0043">
+        <DisplayName>WR-2611-0043 Cola 500 mL PET, shift B</DisplayName>
+        <Description>An ISA-95 work request (Part 4): a production order, made up of the job orders that carry it out.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1001</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Orders</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/EndTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-10</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-20</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-30</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/WorkRequestID</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the work request produces</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Cola 500 mL PET, shift B</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+<!--Object - 1:JO-0043-10 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" BrowseName="1:JO-0043-10" ParentNodeId="ns=1;s=Orders/WR-2611-0043">
+        <DisplayName>JO-0043-10 Prepare final syrup</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CNC-2611-02</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SUG-2611-07</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/SYR-2611-16</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-10/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-10/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-10/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/SyrupRoom</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Prepare final syrup</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0043-10</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-10/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>13.4</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>2</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-10" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-SYRUP-COLA</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0043-10 }}}} -->
+<!--Object - 1:JO-0043-20 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" BrowseName="1:JO-0043-20" ParentNodeId="ns=1;s=Orders/WR-2611-0043">
+        <DisplayName>JO-0043-20 Blend and carbonate</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CO2-2611-01</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/SYR-2611-16</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-20/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-20/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-20/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/BlendingCarbonation</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Blend and carbonate</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0043-20</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-20/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>80</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>5067857</UnitId>
+                        <DisplayName>
+                            <Text>m³</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>cubic metre</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>2</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-20" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-BLEND-COLA</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0043-20 }}}} -->
+<!--Object - 1:JO-0043-30 {{{{ -->
+    <UAObject NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" BrowseName="1:JO-0043-30" ParentNodeId="ns=1;s=Orders/WR-2611-0043">
+        <DisplayName>JO-0043-30 Fill, cap, label and pack</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">ns=11;i=1002</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CAP-2611-05</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/CSE-2611-09</Reference>
+            <Reference ReferenceType="11:Produces">ns=1;s=Lot/FG-2611-0043</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/LBL-2611-03</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PET-2611-11</Reference>
+            <Reference ReferenceType="11:Consumes">ns=1;s=Lot/PLT-2611-02</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-30/ActualQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/Description</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/EndTime</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/JobOrderID</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-30/PlannedQuantity</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/Priority</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/StartTime</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Orders/WR-2611-0043/JO-0043-30/State</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/WorkMasterID</Reference>
+            <Reference ReferenceType="11:DispatchedTo">ns=1;s=Plant1/BottlingLine1</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/ActualQuantity" BrowseName="11:ActualQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/ActualQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/ActualQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/ActualQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/Description" BrowseName="11:Description" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>Fill, cap, label and pack</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/EndTime" BrowseName="11:EndTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/JobOrderID" BrowseName="11:JobOrderID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>JO-0043-30</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/PlannedQuantity" BrowseName="11:PlannedQuantity" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;s=Orders/WR-2611-0043/JO-0043-30/PlannedQuantity/EngineeringUnits</Reference>
+        </References>
+        <Value>
+            <uax:Double>160000</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/PlannedQuantity/EngineeringUnits" BrowseName="EngineeringUnits" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/PlannedQuantity" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=888</Identifier>
+                </TypeId>
+                <Body>
+                    <EUInformation>
+                        <NamespaceUri>http://www.opcfoundation.org/UA/units/un/cefact</NamespaceUri>
+                        <UnitId>4732983</UnitId>
+                        <DisplayName>
+                            <Text>pce</Text>
+                        </DisplayName>
+                        <Description>
+                            <Text>piece</Text>
+                        </Description>
+                    </EUInformation>
+                </Body>
+            </ExtensionObject>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>2</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30/WorkMasterID" BrowseName="11:WorkMasterID" ParentNodeId="ns=1;s=Orders/WR-2611-0043/JO-0043-30" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WM-PACK-500-24</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:JO-0043-30 }}}} -->
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/Priority" BrowseName="11:Priority" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:Int32>2</uax:Int32>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/StartTime" BrowseName="11:StartTime" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/State" BrowseName="11:State" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>Aggregate of its job orders; OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+        <Value>
+            <uax:String>NotAllowedToStart</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Orders/WR-2611-0043/WorkRequestID" BrowseName="11:WorkRequestID" ParentNodeId="ns=1;s=Orders/WR-2611-0043" DataType="String">
+        <DisplayName>WorkRequestID</DisplayName>
+        <Description>Unique identifier of the work request</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>WR-2611-0043</uax:String>
+        </Value>
+    </UAVariable>
+<!--Object - 1:WR-2611-0043 }}}} -->
+<!--Object - 1:Orders }}}} -->
+<!--Object - 1:E-1001 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1001" BrowseName="1:E-1001">
+        <DisplayName>Avery Chen (E-1001)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/ShiftSupervisor</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1001 }}}} -->
+<!--Object - 1:E-1002 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1002" BrowseName="1:E-1002">
+        <DisplayName>Jordan Okafor (E-1002)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="11:Operates">ns=1;s=CP-402</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=FL-401</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=LB-403</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/LineOperator</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1002 }}}} -->
+<!--Object - 1:E-1003 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1003" BrowseName="1:E-1003">
+        <DisplayName>Sam Lindqvist (E-1003)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="11:Operates">ns=1;s=CK-404</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=PZ-405</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/LineOperator</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1003 }}}} -->
+<!--Object - 1:E-1004 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1004" BrowseName="1:E-1004">
+        <DisplayName>Riley Moreno (E-1004)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/ProcessOperator</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=SD-201</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=T-201</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=T-202</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1004 }}}} -->
+<!--Object - 1:E-1005 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1005" BrowseName="1:E-1005">
+        <DisplayName>Casey Nakamura (E-1005)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="11:Operates">ns=1;s=BL-301</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=CB-301</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=DA-301</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/ProcessOperator</Reference>
+            <Reference ReferenceType="11:Operates">ns=1;s=RO-101</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1005 }}}} -->
+<!--Object - 1:E-1006 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1006" BrowseName="1:E-1006">
+        <DisplayName>Morgan Patel (E-1006)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/MaintenanceTech</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1006 }}}} -->
+<!--Object - 1:E-1007 {{{{ -->
+    <UAObject NodeId="ns=1;s=Person/E-1007" BrowseName="1:E-1007">
+        <DisplayName>Taylor Brooks (E-1007)</DisplayName>
+        <Description>This ObjectType indicates a specifically identified individual</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/Persons</Reference>
+            <Reference ReferenceType="2:DefinedByPersonnelClass">ns=1;s=PersonnelClass/QualityTech</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=5131</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:E-1007 }}}} -->
+<!--Object - 1:Personnel {{{{ -->
+    <UAObject NodeId="ns=1;s=Personnel" BrowseName="1:Personnel">
+        <DisplayName>Personnel</DisplayName>
+        <Description>ISA-95 personnel model (Part 2 §5.3): personnel classes and persons</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:PersonnelClasses {{{{ -->
+    <UAObject NodeId="ns=1;s=Personnel/PersonnelClasses" BrowseName="1:PersonnelClasses">
+        <DisplayName>Personnel Classes</DisplayName>
+        <Description>PersonnelClassType instances</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:LineOperator {{{{ -->
+    <UAObject NodeId="ns=1;s=PersonnelClass/LineOperator" BrowseName="1:LineOperator">
+        <DisplayName>Packaging Line Operator</DisplayName>
+        <Description>This ObjectType indicates a grouping of persons with similar characteristics for a definite purpose such as manufacturing operations definition, scheduling, capability and performance</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/PersonnelClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=4996</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:LineOperator }}}} -->
+<!--Object - 1:MaintenanceTech {{{{ -->
+    <UAObject NodeId="ns=1;s=PersonnelClass/MaintenanceTech" BrowseName="1:MaintenanceTech">
+        <DisplayName>Maintenance Technician</DisplayName>
+        <Description>This ObjectType indicates a grouping of persons with similar characteristics for a definite purpose such as manufacturing operations definition, scheduling, capability and performance</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/PersonnelClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=4996</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:MaintenanceTech }}}} -->
+<!--Object - 1:ProcessOperator {{{{ -->
+    <UAObject NodeId="ns=1;s=PersonnelClass/ProcessOperator" BrowseName="1:ProcessOperator">
+        <DisplayName>Process Operator</DisplayName>
+        <Description>This ObjectType indicates a grouping of persons with similar characteristics for a definite purpose such as manufacturing operations definition, scheduling, capability and performance</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/PersonnelClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=4996</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:ProcessOperator }}}} -->
+<!--Object - 1:QualityTech {{{{ -->
+    <UAObject NodeId="ns=1;s=PersonnelClass/QualityTech" BrowseName="1:QualityTech">
+        <DisplayName>Quality Technician</DisplayName>
+        <Description>This ObjectType indicates a grouping of persons with similar characteristics for a definite purpose such as manufacturing operations definition, scheduling, capability and performance</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/PersonnelClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=4996</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:QualityTech }}}} -->
+<!--Object - 1:ShiftSupervisor {{{{ -->
+    <UAObject NodeId="ns=1;s=PersonnelClass/ShiftSupervisor" BrowseName="1:ShiftSupervisor">
+        <DisplayName>Shift Supervisor</DisplayName>
+        <Description>This ObjectType indicates a grouping of persons with similar characteristics for a definite purpose such as manufacturing operations definition, scheduling, capability and performance</Description>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel/PersonnelClasses</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=2;i=4996</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:ShiftSupervisor }}}} -->
+<!--Object - 1:PersonnelClasses }}}} -->
+<!--Object - 1:Persons {{{{ -->
+    <UAObject NodeId="ns=1;s=Personnel/Persons" BrowseName="1:Persons">
+        <DisplayName>Persons</DisplayName>
+        <Description>PersonType instances (fictitious)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;s=Personnel</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:Persons }}}} -->
+<!--Object - 1:Personnel }}}} -->
 </UANodeSet>

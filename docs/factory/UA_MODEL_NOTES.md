@@ -30,8 +30,8 @@ The spike showed that Acme 1.00 shared InstanceDeclarations across parents, so n
 ## Generator (built 2026-11-05)
 
 ```
-npm run generate -w factory   # factory/plant/line1.yaml → nodesets/factory/BeverageFactory.NodeSet2.xml
-npm run verify -w factory     # reload from scratch on top of the standard NodeSets, then 441 checks against the YAML
+npm run generate -w factory   # factory/plant/line1.yaml → nodesets/factory/ISA95Operations.NodeSet2.xml (our types) + BeverageFactory.NodeSet2.xml (instances)
+npm run verify -w factory     # reload from scratch on top of the standard NodeSets, then 585 checks against the YAML
 npm start -w server           # opc.tcp://localhost:4840/UA/BeverageFactory (anonymous; SecurityMode None, Sign or SignAndEncrypt)
 python3 -I tools/resolve_check.py nodesets   # independent cross-file reference check
 ```
@@ -40,7 +40,8 @@ python3 -I tools/resolve_check.py nodesets   # independent cross-file reference 
 |---|---|
 | `factory/plant/line1.yaml` | Plant definition (source of truth): units (UNECE), vendors, ISA-95 classes, areas → equipment → ports and instruments, flow links |
 | `factory/src/plant.ts` | Types + validation: unique tags; known classes, vendors and units; links Out → In with the same Category; nominal values within range |
-| `factory/src/build.ts` | Builders per kind (`isa95`, `acmeTank`, `pump`, `packml`), Machinery building blocks, Pumps ports + `ConnectsTo`, PA-DIM devices |
+| `factory/src/build.ts` | Builders per kind (`isa95`, `acmeTank`, `pump`, `packml`), Machinery building blocks, Pumps ports + `ConnectsTo`, PA-DIM devices; Personnel, Materials and Orders hierarchies with their graph references (PLANT_DESIGN §8) |
+| `factory/src/ops-types.ts` | The `ISA95Operations` types namespace: `WorkRequestType`, `JobOrderType` and six non-hierarchical ReferenceTypes (STANDARDS_COVERAGE, "Beyond equipment") |
 | `factory/src/verify.ts` | Structural checks on the reloaded NodeSet. A tamper test (deleting one `ConnectsTo`) makes it fail as expected |
 | `factory/src/tools/inspect-type.ts` | Prints a type's InstanceDeclaration tree, including inherited members and modelling rules |
 | `factory/src/tools/browse.ts` | A generic OPC UA client browse of the running server (`nsu=` start nodes supported) |
@@ -53,6 +54,7 @@ python3 -I tools/resolve_check.py nodesets   # independent cross-file reference 
 - **`acmeTank`:** vendor `MixingTankType` with optionals `Monitoring`, `Monitoring.Process.Phases`, `Equipment.Mixer`, plus Acme nameplate and Mixer nameplate. The type ships no units, so the generator supplies EngineeringUnits for its 13 ProcessValues. Linked from its area with `Organizes`.
 - **`pump`:** Pumps `PumpType` with the Identification nameplate, `Operational/Measurements` (DifferentialPressure, FluidTemperature, PumpPowerInput, Speed, with units) and `Ports`. Linked with `Organizes`.
 - **`packml`:** `PackMLBaseObjectType` with PackMLVersion, TagID, `Admin` (MachDesignSpeed, ProdProcessed/Defective/ConsumedCount, StopReason, StateCurrentTime, AccTimeSinceReset), and speeds in min⁻¹. Linked with `Organizes`.
+- **Personnel / Materials / Orders** *(2026-11-16)*: three folders `Organizes`-ed from `Objects`. ISA-95 COM `PersonnelClassType`/`PersonType` and `MaterialClassType`/`MaterialDefinitionType`/`MaterialLotType` instances in sub-folders; our `WorkRequestType` with `JobOrderType` components. All cross-links are non-hierarchical (COM `DefinedBy…` + our `Operates`, `Consumes`, `Produces`, `StoredIn`, `DispatchedTo`, `DefinedByMaterialClass`). Lot quantities and job-order quantities carry EngineeringUnits. The types NodeSet is written first, so its fixed NodeIds (ReferenceTypes i=4001–4006, ObjectTypes i=1001–1002) are reserved before node-opcua numbers their members.
 - **`machinery: true` (and every PackML machine):**
   - a `MachineryBuildingBlocks` folder, with HasAddIn → Identification, MachineryItemState, MachineryOperationMode, Monitoring (+ OperationCounters on PackML machines);
   - Identification, Monitoring and OperationCounters are **also** AddIns of the item itself (§7.3: one node, two paths);

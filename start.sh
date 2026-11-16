@@ -64,7 +64,7 @@ set -a
 set +a
 [ -f compare/gateways.yaml ] || die "compare/gateways.yaml is missing (it ships with the project)."
 
-if [ ! -f nodesets/factory/BeverageFactory.NodeSet2.xml ]; then
+if [ ! -f nodesets/factory/BeverageFactory.NodeSet2.xml ] || [ ! -f nodesets/factory/ISA95Operations.NodeSet2.xml ]; then
   say "generating the plant NodeSet…"
   npm run --silent generate -w factory
 fi

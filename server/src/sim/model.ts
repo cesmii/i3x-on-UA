@@ -6,6 +6,7 @@
  */
 import { Rng } from "./rng.js";
 import { PackmlMachine, type PackmlConfig } from "./packml.js";
+import { OrderBook, type Counters, type OrdersSpec } from "./orders.js";
 
 const H = 3600;
 const BOTTLE_M3 = 0.0005;                    // 500 mL
@@ -19,6 +20,7 @@ export type BatchPhase = "Idle" | "FillWater" | "Dissolve" | "Hold" | "Transfer"
 /** A value for one OPC UA node, keyed by our NodeId path (s=<key>). */
 export type Reading =
   | number | boolean | string
+  | Date | null                                                  // DateTime; null = no value yet (Good, so GoodNoData in i3X)
   | { state: string }                                            // Machinery / PackML state machine CurrentState
   | { packmlCount: Array<{ id: number; name: string; count: number; acc: number }> }
   | { packmlAlarm: { id: number; value: number; message: string } };
@@ -63,9 +65,14 @@ export class PlantSim {
   acc = [0, 0, 0, 0];                                    // FL→CP, CP→LB, LB→CK (bottles); CK→PZ (cases)
   readonly accCap = [1200, 1200, 1500, 60];
   pallets = 0;
+  // ---- orders (ISA-95 work requests / job orders) and cumulative production they count against
+  readonly orders?: OrderBook;
+  made: Counters = { syrup: 0, blend: 0, pack: 0 };   // m³ final syrup, m³ beverage blended, bottles packed
 
-  constructor(lineSpecs: LineSpec[], seed = 42) {
+  /** `now` stamps order start/end times (wall clock on the server; check.ts runs headless). */
+  constructor(lineSpecs: LineSpec[], seed = 42, orders?: OrdersSpec, private readonly now: () => Date = () => new Date()) {
     this.rng = new Rng(seed);
+    if (orders) this.orders = new OrderBook(orders);
     const reasons = {
       "FL-401": [[201, "Fill valve fault"], [202, "Bottle jam at infeed star"], [203, "Product temperature high"]],
       "CP-402": [[301, "Cap chute empty"], [302, "Torque out of range"]],
@@ -223,6 +230,13 @@ export class PlantSim {
     if (frac101 < 0.4) this.xv101 = true;
     if (frac101 > 0.85) this.xv101 = false;
     if (this.xv101) f.raw = this.addIn(this.T101, 30, dt, 999.5, 12);
+
+    // --- orders: count production against the running work request
+    this.made.syrup += ((f.p202 + f.conc) * dt) / H;
+    this.made.blend += (f.blend * dt) / H;
+    const packer = this.line.find((m) => m.cfg.tag === "CK-404");          // bottles packed = cases × bottles/case
+    if (packer) this.made.pack = packer.processed * packer.cfg.unitsPerOutput;
+    this.orders?.step(this.made, this.now());
   }
 
   private phase(p: BatchPhase) { this.sdPhase = p; this.sdPhaseTime = 0; }
@@ -357,6 +371,9 @@ export class PlantSim {
       r.set(`${t}/OperationCounters/OperationDuration`, m.executeS * 1000);
       r.set(`${t}/OperationCounters/OperationCycleCounter`, m.processed);
     }
+
+    // orders + live material lots (Orders/…, Lot/…)
+    this.orders?.readings(r, { "T-202": this.T202.v, "CO2-901": (this.co2Pct / 100) * 30 }); // CO2 tank: 30 t
     return r;
   }
 }

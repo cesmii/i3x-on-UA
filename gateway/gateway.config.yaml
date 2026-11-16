@@ -23,6 +23,8 @@ interpretation:
   synthesizeFlow: true               # FlowsTo/FedBy from Pumps ports joined by ConnectsTo
   quality: detailed                  # detailed = OPC UA status name ("Bad_NotConnected") | base = Good/GoodNoData/Bad/Uncertain only
   componentsShape: flat              # flat = all composition descendants in one `components` map | nested = components inside components
+  singleRoot: ""                     # NodeId (nsu=…) of one Object to present as the ONLY root; the other top-level Objects become its children (synthesized) | "" = off
+  singleRootType: Enterprise         # that root is re-typed to gateway:<singleRootType> (typeChanged; OPC UA type kept in metadata)
 
 subscriptions:
   ttlSeconds: 300       # delete a subscription after this long without /sync or an open stream

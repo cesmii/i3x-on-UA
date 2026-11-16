@@ -44,3 +44,16 @@ Thumbs.db
 #   nodesets/factory/*.NodeSet2.xml   generated, but deterministic and the published model artifact
 #   nodesets/vendor/, docs/acme/      Acme profile releases (CESMII-owned)
 compare/logs/
+
+# --- third-party documents: not redistributable; each folder's README says where to get them ---
+#   OPC Foundation specifications (copyright OPC Foundation) and PMMI files (owned by PMMI).
+#   The OPC Foundation NodeSets in nodesets/standard/ are MIT-licensed and stay tracked.
+docs/machinery/*
+!docs/machinery/README.md
+docs/opcua/*
+!docs/opcua/README.md
+docs/pmmi/*
+!docs/pmmi/README.md
+
+# --- working files that aren't ours to publish ---
+docs/*.pptx

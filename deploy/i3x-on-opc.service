@@ -1,4 +1,4 @@
-# systemd unit: the whole i3x-on-OPC demo (plant + cesmii + i3x2ua + uns + front door :8080), read-only.
+# systemd unit: the whole i3x-on-OPC demo (plant + cesmii + i3x2ua + uns + front door :8084), read-only.
 # Install: see deploy/README.md. Edit the three marked lines (User, WorkingDirectory, PATH) first.
 
 [Unit]
@@ -15,8 +15,8 @@ WorkingDirectory=/opt/i3x-on-OPC
 # EDIT: put the directory holding `node` (Node 24) first; systemd doesn't load nvm/.bashrc
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=NODE_ENV=production
-# Front door port (default 8080 from compare/gateways.yaml); change it here if 8080 is taken on this host
-Environment=FRONT_DOOR_PORT=8080
+# Front door port (default 8084 from compare/gateways.yaml); change it here if 8084 is taken on this host
+Environment=FRONT_DOOR_PORT=8084
 # Public demo: refuse writes everywhere (front door) and in our gateway (also /info capabilities.update.current=false)
 Environment=COMPARE_READ_ONLY=1
 Environment=GATEWAY_READ_ONLY=1

@@ -26,6 +26,8 @@ export interface I3xObject {
 export interface ValueSource { kind: "leaf" | "branch"; node: string; dataType?: string; valueRank?: number; props: Array<{ key: string; node: string; dataType?: string; valueRank?: number }> }
 
 type Cat = "property" | "composition" | "hierarchy" | "graph" | "plumbing";
+/** Pseudo reference type for parents synthesized by the singleRoot switch (no OPC UA reference exists). */
+const SINGLE_ROOT_REF = "gateway:singleRoot";
 
 export class Projection {
   readonly namespaces = new Map<string, I3xNamespace>();
@@ -41,6 +43,7 @@ export class Projection {
   private readonly shortNs = new Map<string, string>();
   private readonly propValues = new Map<string, unknown>();
   private readonly isProp = new Set<string>();
+  private singleRootDetached: string | null | undefined;
 
   constructor(private readonly m: UaModel, private readonly c: Crawler, private readonly p: Interpretation) {
     this.s = new SchemaMapper(m, p);
@@ -58,6 +61,7 @@ export class Projection {
   }
   private projectedNs(uri: string) { return `${uri}?projection=i3X`; }
   typeId(id: string): string {
+    if (id === SINGLE_ROOT_REF) return id;
     const t = this.m.types.get(id) ?? this.m.refTypes.get(id);
     if (!t || this.p.typeIds === "nsu") return id;
     return `${this.nsShort(t.browseName.ns)}:${t.browseName.name}`;
@@ -66,6 +70,7 @@ export class Projection {
 
   // ---------- §4 reference classification ----------
   private category(rt: string): Cat {
+    if (rt === SINGLE_ROOT_REF) return "hierarchy";
     if (this.cat.has(rt)) return this.cat.get(rt)!;
     const sub = (a: string) => this.c.isSubtype(rt, a, "ref");
     const r = this.m.refTypes.get(rt);
@@ -117,6 +122,18 @@ export class Projection {
         return a.from < b.from ? -1 : a.from > b.from ? 1 : 0;
       });
       parentOf.set(n.id, cands[0] ?? null);
+    }
+
+    // [switch singleRoot] one Object becomes the only root; every other top-level Object is re-parented under it
+    const single = this.p.singleRoot && setIds.has(this.p.singleRoot) ? this.p.singleRoot : undefined;
+    if (this.p.singleRoot && !single) console.warn(`gateway: singleRoot ${this.p.singleRoot} is not a projected Object; switch ignored`);
+    if (single) {
+      for (const n of set) {
+        const par = parentOf.get(n.id);
+        if (n.id !== single && (!par || par.from === ID.Objects)) parentOf.set(n.id, { from: single, type: SINGLE_ROOT_REF });
+      }
+      if (parentOf.get(single)?.from !== ID.Objects) this.singleRootDetached = parentOf.get(single)?.from ?? null;
+      parentOf.set(single, null);
     }
 
     this.registerCoreTypes();
@@ -307,10 +324,29 @@ export class Projection {
     return eid;
   }
 
+  /** [switch singleRoot] the gateway ObjectType the single root is re-typed to: same schema as its OPC UA type, gateway namespace. */
+  private singleRootType(opcType: string): string {
+    const eid = `gateway:${this.p.singleRootType}`;
+    if (this.objectTypes.has(eid)) return eid;
+    const src = this.objectTypes.get(opcType);
+    this.objectTypes.set(eid, {
+      elementId: eid, displayName: this.p.singleRootType, namespaceUri: GW_NS, sourceTypeId: src?.sourceTypeId ?? opcType, schema: src?.schema ?? { type: "object" },
+      metadata: { description: `The single root of this i3X address space (gateway switch singleRoot). Not an OPC UA type: the root Object's OPC UA TypeDefinition is ${opcType}, whose schema this type reuses.`,
+        opcua: { projectedFrom: opcType, fidelity: [
+          { aspect: "type", loss: "synthesized", detail: `Defined by the gateway's singleRoot switch; the source Object's OPC UA type is ${opcType}.` },
+          // it reuses that type's schema, so that type's own losses apply here too
+          ...(((src?.metadata.opcua as { fidelity?: Fidelity[] } | undefined)?.fidelity) ?? []),
+        ] } },
+    });
+    return eid;
+  }
+
   // ---------- §6 objects ----------
   private object(n: UNode, par: { from: string; type: string } | null, inc: Array<{ from: string; type: string }>, setIds: Set<string>): I3xObject {
     const isLeaf = n.nodeClass === "Variable";
-    const typeElementId = isLeaf ? this.leafType(n) : n.typeDefinition ? this.objectType(n.typeDefinition) : UNKNOWN_TYPE;
+    const opcType = isLeaf ? this.leafType(n) : n.typeDefinition ? this.objectType(n.typeDefinition) : UNKNOWN_TYPE;
+    const isSingleRoot = !!this.p.singleRoot && n.id === this.p.singleRoot && !par;
+    const typeElementId = isSingleRoot ? this.singleRootType(opcType) : opcType;
     const t = n.typeDefinition ? this.m.types.get(n.typeDefinition) : undefined;
     const props = n.refs.filter((r) => this.isProp.has(r.target) && this.m.nodes.has(r.target)).map((r) => this.m.nodes.get(r.target)!);
     const fidelity: Fidelity[] = [];
@@ -321,6 +357,11 @@ export class Projection {
     const methods = n.refs.map((r) => this.m.nodes.get(r.target)).filter((x) => x?.nodeClass === "Method").map((x) => this.qname(x!.browseName));
     if (methods.length) fidelity.push({ aspect: "methods", loss: "dropped", detail: `Not callable through i3X 1.0: ${methods.join(", ")}` });
     if (n.eventNotifier) fidelity.push({ aspect: "events", loss: "dropped", detail: `OPC UA EventNotifier (${[n.eventNotifier & 1 && "SubscribeToEvents", n.eventNotifier & 4 && "HistoryRead", n.eventNotifier & 8 && "HistoryWrite"].filter(Boolean).join(", ")}): events from this Object and its sources are not projected (i3X 1.0 has no event model).` });
+    if (par?.type === SINGLE_ROOT_REF) fidelity.push({ aspect: "parent", loss: "synthesized", detail: `Top-level in OPC UA (a child of Objects). Placed under ${this.m.nodes.get(par.from)?.displayName} by the gateway's singleRoot switch, so the i3X address space has one root; no OPC UA reference connects them.` });
+    if (isSingleRoot) {
+      fidelity.push({ aspect: "typeDefinition", loss: "typeChanged", detail: `Presented as ${typeElementId} (singleRoot switch), the one root containing every other top-level Object. Its OPC UA TypeDefinition is ${opcType}; its value is still that type's Properties.` });
+      if (this.singleRootDetached) fidelity.push({ aspect: "parent", loss: "dropped", detail: `Its OPC UA parent ${this.m.nodes.get(this.singleRootDetached)?.displayName} is not shown as an i3X parent: a root has none.` });
+    }
     if (n.locale) fidelity.push({ aspect: "displayName", loss: "dropped", detail: `DisplayName locale "${n.locale}" not carried by i3X displayName.` });
 
     // value source + extension check (§6)
@@ -358,7 +399,7 @@ export class Projection {
           typeDefinition: tid, ...(tdef ? { typeBrowseName: this.qname(tdef.browseName) } : {}),
           ...(isLeaf ? { dataType: this.s.name(n.dataType), valueRank: n.valueRank, writable: ((n.accessLevel ?? 0) & 2) !== 0, historizing: n.historizing === true } : {}),
           ...(!isLeaf && props.some((p) => ((p.accessLevel ?? 0) & 2) !== 0) ? { writableProperties: props.filter((p) => ((p.accessLevel ?? 0) & 2) !== 0).map((p) => p.browseName.name) } : {}),
-          parentReference: par ? (par.from === ID.Objects ? "Organizes (from Objects: root)" : this.typeId(par.type)) : undefined,
+          parentReference: par ? (par.from === ID.Objects ? "Organizes (from Objects: root)" : par.type === SINGLE_ROOT_REF ? "none (synthesized by singleRoot switch; top-level in OPC UA)" : this.typeId(par.type)) : isSingleRoot ? "Organizes (from Objects: root; singleRoot switch)" : undefined,
           otherParents: others.length ? others : undefined,
           ...(opcProps ? { properties: opcProps } : {}),
           ...(ifaces.length ? { interfaces: ifaces } : {}),

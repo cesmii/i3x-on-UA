@@ -1,0 +1,257 @@
+<?xml version="1.0"?>
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:ns2="http://www.OPCFoundation.org/UA/2013/01/ISA95/Type.xsd" xmlns:ns1="https://cesmii.net/i3x-demo/ISA95Operations/Type.xsd">
+    <NamespaceUris>
+        <Uri>https://cesmii.net/i3x-demo/ISA95Operations/</Uri>
+        <Uri>http://www.OPCFoundation.org/UA/2013/01/ISA95</Uri>
+    </NamespaceUris>
+    <Models>
+        <Model ModelUri="https://cesmii.net/i3x-demo/ISA95Operations/" Version="1.0.0" PublicationDate="2026-11-16T00:00:00.000Z">
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/" Version="1.05.03" PublicationDate="2023-12-15T00:00:00.000Z"/>
+            <RequiredModel ModelUri="http://www.OPCFoundation.org/UA/2013/01/ISA95" Version="1.00" PublicationDate="2013-11-06T00:00:00.000Z"/>
+        </Model>
+    </Models>
+    <Aliases>
+        <Alias Alias="Double">i=11</Alias>
+        <Alias Alias="EUInformation">i=887</Alias>
+        <Alias Alias="HasComponent">i=47</Alias>
+        <Alias Alias="HasModellingRule">i=37</Alias>
+        <Alias Alias="HasProperty">i=46</Alias>
+        <Alias Alias="HasSubtype">i=45</Alias>
+        <Alias Alias="HasTypeDefinition">i=40</Alias>
+        <Alias Alias="Int32">i=6</Alias>
+        <Alias Alias="String">i=12</Alias>
+        <Alias Alias="UtcTime">i=294</Alias>
+    </Aliases>
+<!--ReferenceTypes-->
+    <UAReferenceType NodeId="ns=1;i=4005" BrowseName="1:StoredIn">
+        <DisplayName>StoredIn</DisplayName>
+        <Description>A material lot is stored in an equipment element (ISA-95 MaterialLot "Storage Location"). ISA-95 COM 1.00 has LocatedIn, but declares it a subtype of HasProperty, so it can't link two Objects.</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+        </References>
+        <InverseName>StorageLocationOf</InverseName>
+    </UAReferenceType>
+    <UAReferenceType NodeId="ns=1;i=4004" BrowseName="1:Produces">
+        <DisplayName>Produces</DisplayName>
+        <Description>Equipment or a job order produces a material lot (ISA-95 material use "Produced").</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+        </References>
+        <InverseName>ProducedBy</InverseName>
+    </UAReferenceType>
+    <UAReferenceType NodeId="ns=1;i=4002" BrowseName="1:Operates">
+        <DisplayName>Operates</DisplayName>
+        <Description>A Person operates an equipment element (ISA-95 personnel assigned to equipment; Part 4 personnel actual).</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+        </References>
+        <InverseName>OperatedBy</InverseName>
+    </UAReferenceType>
+    <UAReferenceType NodeId="ns=1;i=4006" BrowseName="1:DispatchedTo">
+        <DisplayName>DispatchedTo</DisplayName>
+        <Description>A job order is dispatched to the equipment element that executes it (ISA-95 Part 3 dispatching; the job order's hierarchy scope; the OPC 10031-4 JobOrderReceiver).</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+        </References>
+        <InverseName>ReceivesJobOrder</InverseName>
+    </UAReferenceType>
+    <UAReferenceType NodeId="ns=1;i=4001" BrowseName="1:DefinedByMaterialClass">
+        <DisplayName>DefinedByMaterialClass</DisplayName>
+        <Description>Categorizes a MaterialDefinition by a MaterialClass. The sibling of ISA-95 COM DefinedByEquipmentClass / DefinedByPersonnelClass, which COM 1.00 lacks.</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=2;i=4912</Reference>
+        </References>
+        <InverseName>MaterialClassOf</InverseName>
+    </UAReferenceType>
+    <UAReferenceType NodeId="ns=1;i=4003" BrowseName="1:Consumes">
+        <DisplayName>Consumes</DisplayName>
+        <Description>Equipment or a job order consumes a material lot (ISA-95 material use "Consumed").</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+        </References>
+        <InverseName>ConsumedBy</InverseName>
+    </UAReferenceType>
+<!--ObjectTypes-->
+<!--ObjectType - 1:WorkRequestType {{{{ -->
+    <UAObjectType NodeId="ns=1;i=1001" BrowseName="1:WorkRequestType">
+        <DisplayName>WorkRequestType</DisplayName>
+        <Description>An ISA-95 work request (Part 4): a production order, made up of the job orders that carry it out.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty">ns=1;i=1013</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1014</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1015</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1016</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1017</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=1018</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=1019</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=2;i=4958</Reference>
+        </References>
+    </UAObjectType>
+    <UAVariable NodeId="ns=1;i=1013" BrowseName="1:WorkRequestID" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="String">
+        <DisplayName>WorkRequestID</DisplayName>
+        <Description>Unique identifier of the work request</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1014" BrowseName="1:Description" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the work request produces</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1015" BrowseName="1:Priority" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1016" BrowseName="1:StartTime" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1017" BrowseName="1:EndTime" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1018" BrowseName="1:State" ParentNodeId="ns=1;i=1001" AccessLevel="3" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>Aggregate of its job orders; OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+<!--Object - 1:<JobOrder> {{{{ -->
+<!--ObjectType - 1:JobOrderType {{{{ -->
+    <UAObjectType NodeId="ns=1;i=1002" BrowseName="1:JobOrderType">
+        <DisplayName>JobOrderType</DisplayName>
+        <Description>An ISA-95 job order (Part 4): one unit of work dispatched to an equipment element. Fields follow OPC 10031-4 ISA95JobOrderDataType.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty">ns=1;i=1000</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1003</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1004</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1005</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1006</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1007</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=1008</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=1009</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=1011</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=2;i=4958</Reference>
+        </References>
+    </UAObjectType>
+    <UAVariable NodeId="ns=1;i=1000" BrowseName="1:JobOrderID" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="String">
+        <DisplayName>JobOrderID</DisplayName>
+        <Description>Unique identifier of the job order</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1003" BrowseName="1:Description" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="String">
+        <DisplayName>Description</DisplayName>
+        <Description>What the job order does</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1004" BrowseName="1:WorkMasterID" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="String">
+        <DisplayName>WorkMasterID</DisplayName>
+        <Description>The work master (recipe / routing) the job order executes</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1005" BrowseName="1:Priority" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="Int32">
+        <DisplayName>Priority</DisplayName>
+        <Description>Scheduling priority (1 = highest)</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1006" BrowseName="1:StartTime" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="UtcTime">
+        <DisplayName>StartTime</DisplayName>
+        <Description>Actual start</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1007" BrowseName="1:EndTime" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="UtcTime">
+        <DisplayName>EndTime</DisplayName>
+        <Description>Actual end</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=80</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1008" BrowseName="1:State" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="String">
+        <DisplayName>State</DisplayName>
+        <Description>OPC 10031-4 ISA95JobOrderStateMachineType state name: NotAllowedToStart, AllowedToStart, Running, Interrupted, Ended or Aborted.</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1009" BrowseName="1:PlannedQuantity" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="Double">
+        <DisplayName>PlannedQuantity</DisplayName>
+        <Description>Quantity to produce or process</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1010</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1010" BrowseName="EngineeringUnits" ParentNodeId="ns=1;i=1009" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1011" BrowseName="1:ActualQuantity" ParentNodeId="ns=1;i=1002" AccessLevel="3" DataType="Double">
+        <DisplayName>ActualQuantity</DisplayName>
+        <Description>Quantity produced or processed so far</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=17497</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=1012</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=1012" BrowseName="EngineeringUnits" ParentNodeId="ns=1;i=1011" DataType="EUInformation">
+        <DisplayName>EngineeringUnits</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+        </References>
+    </UAVariable>
+<!--ObjectType - 1:JobOrderType }}}}-->
+    <UAObject NodeId="ns=1;i=1019" BrowseName="1:&lt;JobOrder>" ParentNodeId="ns=1;i=1001">
+        <DisplayName>&lt;JobOrder&gt;</DisplayName>
+        <Description>The job orders that make up this work request</Description>
+        <References>
+            <Reference ReferenceType="HasModellingRule">i=11508</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=1;i=1002</Reference>
+        </References>
+    </UAObject>
+<!--Object - 1:<JobOrder> }}}} -->
+<!--ObjectType - 1:WorkRequestType }}}}-->
+<!--VariableTypes-->
+<!--Other Nodes-->
+</UANodeSet>

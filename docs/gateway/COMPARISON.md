@@ -11,16 +11,16 @@
 Start everything with `npm run compare`. Both gateways sit behind the front door:
 
 ```
-cesmii:  http://localhost:8080/cesmii/v1/…
-i3x2ua:  http://localhost:8080/i3x2ua/v1/…
+cesmii:  http://localhost:8084/cesmii/v1/…
+i3x2ua:  http://localhost:8084/i3x2ua/v1/…
 ```
 
 Open both in i3X Explorer, or query them directly, e.g.
 
 ```
-curl -s -X POST localhost:8080/cesmii/v1/objects/value -H 'Content-Type: application/json' \
+curl -s -X POST localhost:8084/cesmii/v1/objects/value -H 'Content-Type: application/json' \
   -d '{"elementIds":["nsu=https://cesmii.net/i3x-demo/BeverageFactory/;s=FL-401"],"maxDepth":0}'
-curl -s -X POST localhost:8080/i3x2ua/v1/objects/value -H 'Content-Type: application/json' \
+curl -s -X POST localhost:8084/i3x2ua/v1/objects/value -H 'Content-Type: application/json' \
   -d '{"elementIds":["asset-02f12ced378a0243"],"maxDepth":0}'
 ```
 
@@ -38,6 +38,7 @@ curl -s -X POST localhost:8080/i3x2ua/v1/objects/value -H 'Content-Type: applica
 | A2 | ObjectType elementId | `<ns>:<BrowseName>`, e.g. `PackML:PackMLBaseObjectType` | `urn:<server>:objecttype:<ns>:v-<version>:<name>:<id>`, e.g. `urn:cesmii-i3x-demo-beverage-factory:objecttype:http-opcfoundation-org-ua-packml:v-1-01:packmlbaseobjecttype:i-6` | `GET /objecttypes` | Should the namespace *version* and the *server* be part of a type's identity? Server-scoped type ids mean the same PackML type has different ids on different servers. |
 | A3 | Namespaces | Only namespaces that own a projected type or relationship type, URI + `?projection=i3X`; plus `https://cesmii.org/i3x` and a gateway namespace (11) | Every server namespace with its raw URI, including the instance namespace (BeverageFactory), IRDI, IA and a server URN (13) | `GET /namespaces` | IG: instances belong to no namespace, and an inexact projection SHOULD carry `?projection=i3X`. Should a projection gateway use the suffix? |
 | A4 | Roots | The 7 children of OPC UA `Objects` (DeviceSet, NetworkSet, DeviceTopology, Machines, PackMLObjects, Demo Beverage Co., EquipmentClasses) | One root: `Objects` itself | `GET /objects?root=true` | Is OPC UA's `Objects` folder part of the information model, or the server's entry point? |
+| A4b | Roots, since 2026-11-16 | **One root** with the `singleRoot` switch (compare config): `Demo Beverage Co.`, re-typed `gateway:Enterprise`, containing all 10 other top-level objects (fidelity `synthesized` / `typeChanged`). Switch off: the 10 children of `Objects` | Unchanged: `Objects` | `GET /objects?root=true` | Same single-root outcome, different root: a business object (ours) vs the server's entry folder (i3x2ua). uns has 4 roots (`demobev`, `people`, `materials`, `orders`). Which should a WG profile recommend? |
 
 ### B. What becomes an i3X Object
 
@@ -111,6 +112,20 @@ curl -s -X POST localhost:8080/i3x2ua/v1/objects/value -H 'Content-Type: applica
 | H3 | Missing description | Omitted | `"Derived from model node <name>"` | `FL-401` | — |
 | H4 | `isExtended` | Computed: true when an instance has Properties its type doesn't declare (4 objects, e.g. the Acme Mixers' DI nameplate properties) | Always `false` | `SD-201/Equipment/Mixer` | — |
 | H5 | Bulk item shape | `{success, elementId, result \| responseDetail}` (IG) | Same, plus `error: {code, message}` and `subscriptionId: null` on every item | any failing bulk item | Extra fields are harmless, but are they part of the contract? |
+
+### I. Beyond equipment: personnel, materials, orders (added 2026-11-16)
+
+The plant gained three top-level hierarchies (`docs/factory/PLANT_DESIGN.md` §8) and six new non-hierarchical ReferenceTypes in the `ISA95Operations` namespace. **Neither gateway needed a change**: both crawl the new folders and turn every new reference into a graph relationship. Both stay "1.0 Compatible" (cesmii 55 passed, i3x2ua 51, uns 52; 0 failures).
+
+| # | Topic | cesmii (ours) | i3x2ua | Look at | WG question |
+|---|---|---|---|---|---|
+| I1 | Reverse names of domain relationships (C6, now with domain names) | OPC UA InverseName: `ISA95Operations:Operates` / `ISA95Operations:OperatedBy`, `DispatchedTo` / `ReceivesJobOrder` | `Operates` / `inverseOf_Operates`, `DispatchedTo` / `inverseOf_DispatchedTo` | `FL-401` related: ours `OperatedBy → E-1002`; i3x2ua `asset-02f12ced378a0243` `inverseOf_Operates` | Same as C6, but this is where it matters: a business user reads "OperatedBy", not "inverseOf_Operates". |
+| I2 | A defective InverseName in a standard NodeSet | Passed through: ISA-95 COM's `DefinedByMaterialDefinition` reverse shows as `ISA95:MaterialClassOf` (copy-paste slip in COM 1.00; STANDARDS_COVERAGE, "Beyond equipment") | Hidden by `inverseOf_DefinedByMaterialDefinition` | `GET /relationshiptypes` | Faithful pass-through vs synthesized names: which failure mode is better? |
+| I3 | Namespace in relationship ids | Qualified: `ISA95Operations:Consumes` vs `ISA95:…` | Unqualified: `Consumes` | `GET /relationshiptypes` | Two companion specs defining `Consumes` would collide in i3x2ua. Should relationship ids be namespace-qualified? |
+| I4 | Value of a work request (Properties + composed job orders) | Its Properties as an object (`WorkRequestID`, `Description`, `Priority`, `StartTime`, `EndTime`); `maxDepth: 0` adds the 3 job orders and their State/quantity leaves under `components` | `null` / `GoodNoData` for the branch itself; 9 components with `maxDepth: 0` | `Orders/WR-2611-0042` · i3x2ua JO-0042-30 `asset-c43db48131f3affc` | Same as the branch-value rows above: is a branch's own value its Properties, or nothing? |
+| I5 | Type ids for ISA-95 COM and ISA95Operations types | `ISA95:PersonType`, `ISA95Operations:JobOrderType` | `…:http-www-opcfoundation-org-ua-2013-01-isa95:v-unknown-version:persontype:i-5131`, `…:isa95operations:v-unknown-version:jobordertype:i-1002` (PackML shows `v-1-01`) | `GET /objecttypes` | Observed, cause not investigated: i3x2ua finds no model version for these two namespaces. |
+
+**Third point of comparison (uns):** the hand-authored UNS server got the same three trees (`people/…`, `materials/…`, `orders/…`), with its own relationship names (`Operates`, `Consumes`, `Produces`, `StoredIn`/`Stores`, `RunsOn`/`Runs`). It has no classes or definitions as objects: role, material and category are typed-in text fields. Lot quantities and order progress are polled from the plant's OPC UA tags.
 
 ## Agreement (no difference observed)
 

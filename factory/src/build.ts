@@ -12,7 +12,8 @@ import {
 } from "node-opcua-address-space";
 import { BrowseDirection, DataType, NodeClass, Range, Variant, makeAccessLevelFlag, makeEUInformation } from "node-opcua";
 import { NSU, nsIndex } from "./lib/load.js";
-import { allEquipment, type Area, type Equipment, type Instrument, type Plant, type Vendor } from "./plant.js";
+import { allEquipment, type Area, type Equipment, type Instrument, type Plant, type Quantity, type Vendor } from "./plant.js";
+import { buildOpsTypes, type OpsTypes } from "./ops-types.js";
 
 type NsKey = keyof typeof NSU;
 
@@ -45,16 +46,21 @@ const LEVELS = ["Enterprise", "Site", "Area", "ProcessCell", "Unit", "Production
 
 export class PlantBuilder {
   readonly ns: Namespace;
+  readonly ops: Namespace;
+  private opsTypes!: OpsTypes;
   private readonly idx: Record<NsKey, number>;
   private readonly classes = new Map<string, UAObject>();
   private readonly ports = new Map<string, UAObject>();
   private machines!: UAObject;
 
   constructor(private readonly as: AddressSpace, private readonly plant: Plant) {
+    this.ops = as.registerNamespace(NSU.OPS);          // leftover types first: the instances depend on them
+    this.ops.version = "1.0.0";
+    this.ops.publicationDate = new Date("2026-11-16T00:00:00Z");
     this.ns = as.registerNamespace(plant.namespace);
     this.ns.version = "1.0.0";
     this.ns.publicationDate = new Date("2026-11-05T00:00:00Z"); // fixed, so output is deterministic
-    this.idx = Object.fromEntries(Object.entries(NSU).map(([k, u]) => [k, k === "FACTORY" ? this.ns.index : nsIndex(as, u)])) as any;
+    this.idx = Object.fromEntries(Object.entries(NSU).map(([k, u]) => [k, k === "FACTORY" ? this.ns.index : k === "OPS" ? this.ops.index : nsIndex(as, u)])) as any;
   }
 
   // ---------- small helpers ----------
@@ -164,6 +170,10 @@ export class PlantBuilder {
     for (const [from, to] of this.plant.links) {
       this.ports.get(from)!.addReference({ referenceType: this.rt("DI", "ConnectsTo").nodeId, nodeId: this.ports.get(to)!.nodeId, isForward: true });
     }
+    this.opsTypes = buildOpsTypes(this.as, this.ops);
+    this.personnel();
+    this.materials();
+    this.orders();
     this.accessLevels();
     return this;
   }
@@ -402,6 +412,127 @@ export class PlantBuilder {
       const cs = this.child(sig, "ControlSignal") as UAVariable;
       this.setAnalog(cs, "%", [0, 100], 0);
       this.set(cs, DataType.Float, 0);
+    }
+  }
+
+  // ---------- beyond equipment: personnel, materials, orders (PLANT_DESIGN.md §8) ----------
+
+  /** Equipment by plant reference: an equipment tag or "<site>/<area>". */
+  private eqNode(ref: string): UAObject {
+    const n = this.as.findNode(this.id(ref)) as UAObject | null;
+    if (!n) throw new Error(`equipment ${ref} not found`);
+    return n;
+  }
+  private link(from: BaseNode, refType: UAReferenceType, to: BaseNode) {
+    from.addReference({ referenceType: refType.nodeId, nodeId: to.nodeId, isForward: true });
+  }
+  private topFolder(name: string, description: string) {
+    return this.ns.addFolder(this.as.rootFolder.objects, { browseName: this.own(name), nodeId: this.id(name), description });
+  }
+  private subFolder(parent: UAObject, name: string, displayName: string, description: string) {
+    return this.ns.addFolder(parent, { browseName: this.own(name), displayName, nodeId: this.id(`${parent.browseName.name}/${name}`), description });
+  }
+  /** A DataVariable's EngineeringUnits Property (ISA-95 Quantity and AnalogUnitType both carry one). */
+  private setUnit(v: UAVariable, unitKey: string) {
+    const eu = this.child(v, "EngineeringUnits");
+    if (eu) this.set(eu, DataType.ExtensionObject, this.eu(unitKey));
+    else this.ns.addVariable({ propertyOf: v, browseName: "EngineeringUnits", dataType: "EUInformation", typeDefinition: "PropertyType",
+      value: { dataType: DataType.ExtensionObject, value: this.eu(unitKey) } });
+  }
+  private setQuantity(v: UAVariable, [value, unit]: Quantity) {
+    this.set(v, DataType.Double, value);
+    this.setUnit(v, unit);
+  }
+
+  private personnel() {
+    const p = this.plant.personnel;
+    if (!p) return;
+    const top = this.topFolder("Personnel", "ISA-95 personnel model (Part 2 §5.3): personnel classes and persons");
+    const classes = this.subFolder(top, "PersonnelClasses", "Personnel Classes", "PersonnelClassType instances");
+    const persons = this.subFolder(top, "Persons", "Persons", "PersonType instances (fictitious)");
+    const cls = new Map<string, UAObject>();
+    for (const [id, c] of Object.entries(p.classes)) {
+      cls.set(id, this.ot("ISA95", "PersonnelClassType").instantiate({
+        browseName: this.own(id), displayName: c.name, namespace: this.ns, organizedBy: classes, nodeId: this.id(`PersonnelClass/${id}`),
+      }));
+    }
+    for (const [id, pr] of Object.entries(p.persons)) {
+      const n = this.ot("ISA95", "PersonType").instantiate({
+        browseName: this.own(id), displayName: `${pr.name} (${id})`, namespace: this.ns, organizedBy: persons, nodeId: this.id(`Person/${id}`),
+      });
+      this.link(n, this.rt("ISA95", "DefinedByPersonnelClass"), cls.get(pr.class)!);
+      for (const e of pr.operates ?? []) this.link(n, this.opsTypes.Operates, this.eqNode(e));
+    }
+  }
+
+  private lots = new Map<string, UAObject>();
+  private materials() {
+    const m = this.plant.materials;
+    if (!m) return;
+    const top = this.topFolder("Materials", "ISA-95 material model (Part 2 §5.6): material classes, definitions and lots");
+    const classes = this.subFolder(top, "MaterialClasses", "Material Classes", "MaterialClassType instances");
+    const defs = this.subFolder(top, "MaterialDefinitions", "Material Definitions", "MaterialDefinitionType instances");
+    const lots = this.subFolder(top, "MaterialLots", "Material Lots", "MaterialLotType instances");
+    const cls = new Map<string, UAObject>(), def = new Map<string, UAObject>();
+    for (const [id, c] of Object.entries(m.classes)) {
+      cls.set(id, this.ot("ISA95", "MaterialClassType").instantiate({
+        browseName: this.own(id), displayName: c.name, namespace: this.ns, organizedBy: classes, nodeId: this.id(`MaterialClass/${id}`),
+      }));
+    }
+    for (const [id, d] of Object.entries(m.definitions)) {
+      const n = this.ot("ISA95", "MaterialDefinitionType").instantiate({
+        browseName: this.own(id), displayName: d.name, namespace: this.ns, organizedBy: defs, nodeId: this.id(`Material/${id}`),
+      });
+      this.link(n, this.opsTypes.DefinedByMaterialClass, cls.get(d.class)!); // ISA-95 COM 1.00 has no such reference
+      def.set(id, n);
+    }
+    for (const [id, l] of Object.entries(m.lots)) {
+      const n = this.ot("ISA95", "MaterialLotType").instantiate({
+        browseName: this.own(id), displayName: `${id} ${m.definitions[l.definition].name}`, namespace: this.ns, organizedBy: lots,
+        nodeId: this.id(`Lot/${id}`), optionals: ["Status", "StorageLocation", "Quantity"],
+      });
+      this.link(n, this.rt("ISA95", "DefinedByMaterialDefinition"), def.get(l.definition)!);
+      this.set(this.child(n, "Status"), DataType.String, l.status);
+      this.set(this.child(n, "StorageLocation"), DataType.String, l.storedIn ?? "");
+      if (!l.storedIn) this.ns.deleteNode(this.child(n, "StorageLocation")!); // optional + no data → omit (as Machinery §7.2)
+      this.setQuantity(this.child(n, "Quantity") as UAVariable, l.quantity);
+      if (l.storedIn) this.link(n, this.opsTypes.StoredIn, this.eqNode(l.storedIn));
+      for (const e of l.consumedBy ?? []) this.link(this.eqNode(e), this.opsTypes.Consumes, n);
+      for (const e of l.producedBy ?? []) this.link(this.eqNode(e), this.opsTypes.Produces, n);
+      this.lots.set(id, n);
+    }
+  }
+
+  private orders() {
+    const o = this.plant.orders;
+    if (!o) return;
+    const top = this.topFolder("Orders", "ISA-95 work model (Part 4): work requests and their job orders");
+    const T = this.opsTypes;
+    for (const [wrId, wr] of Object.entries(o)) {
+      const w = T.WorkRequestType.instantiate({
+        browseName: this.own(wrId), displayName: `${wrId} ${wr.description}`, namespace: this.ns, organizedBy: top,
+        nodeId: this.id(`Orders/${wrId}`), optionals: ["Priority", "StartTime", "EndTime"],
+      });
+      this.set(this.child(w, "WorkRequestID"), DataType.String, wrId);
+      this.set(this.child(w, "Description"), DataType.String, wr.description);
+      this.set(this.child(w, "Priority"), DataType.Int32, wr.priority);
+      this.set(this.child(w, "State"), DataType.String, "NotAllowedToStart");
+      for (const [joId, jo] of Object.entries(wr.jobOrders)) {
+        const j = T.JobOrderType.instantiate({
+          browseName: this.own(joId), displayName: `${joId} ${jo.description}`, namespace: this.ns, componentOf: w,
+          nodeId: this.id(`Orders/${wrId}/${joId}`), optionals: ["Priority", "StartTime", "EndTime"],
+        });
+        this.set(this.child(j, "JobOrderID"), DataType.String, joId);
+        this.set(this.child(j, "Description"), DataType.String, jo.description);
+        this.set(this.child(j, "WorkMasterID"), DataType.String, jo.workMaster);
+        this.set(this.child(j, "Priority"), DataType.Int32, wr.priority);
+        this.set(this.child(j, "State"), DataType.String, "NotAllowedToStart");
+        this.setQuantity(this.child(j, "PlannedQuantity") as UAVariable, jo.plannedQuantity);
+        this.setQuantity(this.child(j, "ActualQuantity") as UAVariable, [0, jo.plannedQuantity[1]]);
+        this.link(j, T.DispatchedTo, this.eqNode(jo.dispatchedTo));
+        for (const l of jo.consumes ?? []) this.link(j, T.Consumes, this.lots.get(l)!);
+        for (const l of jo.produces ?? []) this.link(j, T.Produces, this.lots.get(l)!);
+      }
     }
   }
 

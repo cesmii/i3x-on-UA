@@ -26,6 +26,7 @@ npm run sim:check -w server -- 24 7       # headless: 24 simulated hours, seed 7
 | `sim/packml.ts` | PackML machine: nested states (Base/Machine/Execute), faults with StopReason, starved/blocked, counts, rejects |
 | `sim/rng.ts` | Seeded PRNG + noise |
 | `sim/bind.ts` | Writes readings into the address space. Because our NodeIds are paths, the binding needs **no per-signal configuration**. It handles Float vs Double vs Int, state machines (CurrentState + Id + Number), PackML structures, quality overrides and history |
+| `sim/orders.ts` | Work requests and job orders (`OrderBook`) and the live material-lot quantities; `ordersSpec(plant)` derives them from the plant YAML |
 | `sim/check.ts` | Headless invariant run (the Phase 3 exit criterion) |
 | `main.ts` | Server + 1 Hz loop (`SIM_SPEED` steps per tick) |
 
@@ -58,6 +59,17 @@ npm run sim:check -w server -- 24 7       # headless: 24 simulated hours, seed 7
 - **Inactive PackML sub-state machines** (e.g. `ExecuteState` while the machine is Stopped) report `null` with **`Bad_StateNotActive`** (OPC 10000-16), not an empty string. That's a useful i3X quality test.
 - **Noise:** small Gaussian-ish noise on all analog readings. Each value is written only when it changes, so the history holds real changes, not a 1 Hz sample of constants.
 
+## Orders and material lots (added 2026-11-16)
+
+- **One work request runs at a time** (`State` Running, `StartTime` set); the others wait as `AllowedToStart`. Its three job orders run together, each counting from the moment the work request started:
+  - **syrup** (JO-…-10, Syrup Room): m³ of final syrup made in T-202 (simple syrup + concentrate);
+  - **blend** (JO-…-20, Blending & Carbonation): m³ of beverage blended;
+  - **pack** (JO-…-30, Bottling Line 1): bottles packed (case-packer cases × 24).
+- A job order that reaches its `PlannedQuantity` ends on its own (`Ended`, `EndTime` set). The work request ends when its **packing** job ends (160,000 bottles, ≈ 7.5 sim-hours at the line's ≈ 22,800 bottles/h). A job still running then is closed with it, so the syrup job often ends a little short: syrup is made in 9 m³ batches.
+- The next work request starts at once. After the last, the first is **reopened with fresh counts**. The instance model is static, so the demo recycles its two orders instead of creating new nodes (a real MES would issue a new work request). Start/end times are wall-clock, so with `SIM_SPEED` > 1 they're compressed.
+- **Lots:** the finished-goods lot of each work request has the packing job's count as `Quantity` and a `Status` that follows the job (Planned → InProduction → Released). SYR-2611-16 holds T-202's volume, CO2-2611-01 the CO₂ tank inventory in t. Other lots are static.
+- Empty `StartTime`/`EndTime` are written as null with Good status, which the gateways show as `GoodNoData`/`null`.
+
 ## Checks (Phase 3 exit)
 
 `npm run sim:check -w server -- 24 7` (24 simulated hours in about 3 s):
@@ -79,6 +91,8 @@ npm run sim:check -w server -- 24 7       # headless: 24 simulated hours, seed 7
 **Live checks** with `factory/src/tools/read.ts`:
 - PackML nested states, counts (`PackMLCountDataType[]`), StopReason, Machinery states, instruments, pumps, and `PT-902 = null, BadNotConnected` under `SIM_FAULTS` all read correctly.
 - `readHistoryValue` returns the recorded changes. node-opcua adds `BadBoundNotFound` markers at the window edges.
+
+**Order invariants** (added 2026-11-16, checked every simulated minute): exactly one work request is running; every job order's actual is within [0, planned] and never decreases while it runs; each finished-goods lot's `Quantity` equals its packing job's count. The 24 h / seed 42 run completes 3 work requests.
 
 ## Known limits / follow-ups
 

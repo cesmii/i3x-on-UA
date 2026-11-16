@@ -1,6 +1,6 @@
 /**
  * Gateway switch launcher (decision D9). Config: compare/gateways.yaml.
- *   npm run compare [-- up]        start plant + enabled gateways + front door (:8080); Ctrl-C stops what it started
+ *   npm run compare [-- up]        start plant + enabled gateways + front door (:8084); Ctrl-C stops what it started
  *   npm run compare -- status      health and address-space counts per gateway (needs them running)
  *   npm run compare -- conformance i3X conformance suite against each gateway, side by side
  * Each gateway is an opaque backend: a local process or an unmodified upstream container.
@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
+import zlib from "node:zlib";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const CONFIG = path.join(ROOT, "compare/gateways.yaml");
@@ -21,6 +22,8 @@ const LOGS = path.join(ROOT, "compare/logs");
 interface Gateway {
   enabled: boolean; label: string; docs?: string; kind: "process" | "docker"; port: number; env?: Record<string, string>;
   command?: string; image?: string; containerName?: string; containerPort?: number;
+  /** Front door only: displayName → replacement in JSON responses, so Explorer windows are easy to tell apart. */
+  relabel?: Record<string, string>;
 }
 interface Config {
   active: string; frontDoor: { port: number };
@@ -206,7 +209,11 @@ function route(req: http.IncomingMessage, res: http.ServerResponse, cfg: Config,
   const g = cfg.gateways[name];
   const up = http.request({ host: "127.0.0.1", port: g.port, method: req.method, path: pathOut,
     headers: { ...req.headers, host: `localhost:${g.port}`, "x-forwarded-host": req.headers.host ?? "", "x-forwarded-prefix": m ? `/${m[1]}` : "", "x-i3x-gateway": name } },
-  (r) => { res.writeHead(r.statusCode ?? 502, { ...r.headers, "x-i3x-gateway": name }); r.pipe(res); });
+  (r) => {
+    const json = String(r.headers["content-type"] ?? "").includes("application/json");
+    if (!g.relabel || !json) { res.writeHead(r.statusCode ?? 502, { ...r.headers, "x-i3x-gateway": name }); r.pipe(res); return; }
+    relabelBody(r, res, g.relabel, req.headers["accept-encoding"], name);
+  });
   up.on("error", (e) => {
     if (res.headersSent) return res.end();
     res.writeHead(502, { "Content-Type": "application/json" });
@@ -214,6 +221,41 @@ function route(req: http.IncomingMessage, res: http.ServerResponse, cfg: Config,
   });
   req.pipe(up);
   res.on("close", () => up.destroy());
+}
+
+/**
+ * Cosmetic relabel (gateways.yaml `relabel:`): rewrite matching `displayName` values in a JSON response so three
+ * Explorer windows are easy to tell apart. Applied the same way to every gateway, only on the front door;
+ * the gateways' own ports are untouched. Marked with an `x-i3x-relabeled` header.
+ */
+function relabelBody(r: http.IncomingMessage, res: http.ServerResponse, map: Record<string, string>, acceptEncoding: string | string[] | undefined, name: string) {
+  const chunks: Buffer[] = [];
+  r.on("data", (c: Buffer) => chunks.push(c));
+  r.on("end", () => {
+    const original = Buffer.concat(chunks);
+    const enc = String(r.headers["content-encoding"] ?? "");
+    let buf: Buffer;
+    try {
+      const plain = enc === "gzip" ? zlib.gunzipSync(original) : enc === "deflate" ? zlib.inflateSync(original) : enc === "br" ? zlib.brotliDecompressSync(original) : original;
+      const walk = (v: unknown): unknown => {
+        if (Array.isArray(v)) return v.map(walk);
+        if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) =>
+          [k, k === "displayName" && typeof x === "string" && x in map ? map[x] : walk(x)]));
+        return v;
+      };
+      buf = Buffer.from(JSON.stringify(walk(JSON.parse(plain.toString("utf8")))));
+    } catch {                                   // not JSON after all: pass through unchanged
+      res.writeHead(r.statusCode ?? 502, { ...r.headers, "x-i3x-gateway": name });
+      res.end(original);
+      return;
+    }
+    const headers: http.OutgoingHttpHeaders = { ...r.headers, "x-i3x-gateway": name, "x-i3x-relabeled": "1" };
+    delete headers["content-length"]; delete headers["content-encoding"]; delete headers["transfer-encoding"];
+    if (/\bgzip\b/.test(String(acceptEncoding ?? ""))) { buf = zlib.gzipSync(buf); headers["content-encoding"] = "gzip"; }   // IG: gzip when asked
+    headers["content-length"] = buf.length;
+    res.writeHead(r.statusCode ?? 502, headers);
+    res.end(buf);
+  });
 }
 
 // ---------------------------------------------------------------- status

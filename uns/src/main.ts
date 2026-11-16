@@ -21,13 +21,15 @@ const ENDPOINT = process.env.OPCUA_ENDPOINT ?? "opc.tcp://localhost:4840/UA/Beve
 const I3X_NS = "https://cesmii.org/i3x";
 
 // ---------------------------------------------------------------- model
-type Spec = string | { path?: string; as?: string | { equals?: string; enum?: Record<string, string> }; fallback?: Spec; derive?: string };
+type Spec = string | { path?: string; as?: string | { equals?: string; enum?: Record<string, string> }; fallback?: Spec; derive?: string; const?: unknown; optional?: boolean };
 interface TypeDef { description?: string; schema: Record<string, unknown>; tags?: Record<string, Spec> }
-interface AssetDef { id: string; name: string; type: string; tag?: string; nameplate?: boolean; tags?: Record<string, Spec>; value?: Record<string, unknown> }
+interface AssetDef { id: string; name: string; type: string; tag?: string; nameplate?: boolean; tags?: Record<string, Spec>; value?: Record<string, unknown>; children?: AssetDef[] }
 interface AreaDef { id: string; name: string; type: string; value?: Record<string, unknown>; assets: AssetDef[] }
 interface Model {
   namespace: string; plantNamespace: string; pollMs: number; types: Record<string, TypeDef>;
   enterprise: AssetDef; site: AssetDef; areas: AreaDef[]; feeds: Array<[string, string]>; supplies: Array<[string, string]>;
+  roots?: AreaDef[]; links?: Record<string, { reverse: string; pairs: Array<[string, string]> }>;
+  metrics?: boolean;
 }
 const model = parse(fs.readFileSync(path.join(HERE, "../model.yaml"), "utf8")) as Model;
 const NS = model.namespace;
@@ -35,6 +37,7 @@ const NS = model.namespace;
 interface Element {
   elementId: string; displayName: string; typeElementId: string; parentId: string | null; children: string[]; components: string[];
   fields?: Record<string, Spec>; vqt: { value: unknown; quality: string; timestamp: string };
+  metrics?: Array<{ key: string; id: string }>;     // Sparkplug-style leaves of this asset's fields
 }
 const elements = new Map<string, Element>();
 const edges = new Map<string, Array<{ rel: string; target: string }>>();
@@ -53,24 +56,54 @@ function add(elementId: string, displayName: string, type: string, parentId: str
     if (opts.component) { p.components.push(elementId); edge(parentId, "HasComponent", elementId); edge(elementId, "ComponentOf", parentId); }
   }
 }
+const LEAF_TYPE: Record<string, string> = { number: "Metric", integer: "Counter", boolean: "Flag", string: "Text" };
+/** One scalar leaf per field of the asset's payload (composition children: the payload is made of them). */
+function addMetrics(assetId: string, type: string, fields: Record<string, Spec>) {
+  const props = (model.types[type].schema as { properties?: Record<string, { type?: string }> }).properties ?? {};
+  const asset = elements.get(assetId)!;
+  asset.metrics = [];
+  for (const key of Object.keys(props)) {
+    if (!(key in fields)) continue;                 // a schema field this asset doesn't have a tag for
+    const id = `${assetId}/${key}`;
+    add(id, key, LEAF_TYPE[props[key].type ?? ""] ?? "Text", assetId, { component: true });
+    elements.get(id)!.vqt = { value: null, quality: "GoodNoData", timestamp: started };
+    asset.metrics.push({ key, id });
+  }
+}
 const withTag = (specs: Record<string, Spec> | undefined, tag: string) =>
   JSON.parse(JSON.stringify(specs ?? {}).replaceAll("{tag}", tag)) as Record<string, Spec>;
 
 const root = model.enterprise.id, site = `${root}/${model.site.id}`;
 add(root, model.enterprise.name, "Enterprise", null, { value: model.enterprise.value });
 add(site, model.site.name, "Site", root, { value: model.site.value });
+function addAsset(parentId: string, a: AssetDef) {
+  const id = `${parentId}/${a.id}`;
+  byAssetId.set(a.id, id);
+  const fields = { ...withTag(model.types[a.type].tags, a.tag ?? ""), ...withTag(a.tags, a.tag ?? "") };
+  const label = a.tag && !a.tag.includes("/") ? `${a.name} (${a.tag})` : a.name;   // plant tags only, not OPC UA path prefixes
+  add(id, label, a.type, parentId, Object.keys(fields).length ? { fields } : { value: a.value });
+  if (model.metrics && Object.keys(fields).length) addMetrics(id, a.type, fields);
+  if (a.nameplate && a.tag) add(`${id}/nameplate`, `${a.name} Nameplate`, "Nameplate", id, { fields: withTag(model.types.Nameplate.tags, a.tag), component: true });
+  for (const c of a.children ?? []) addAsset(id, c);
+}
 for (const area of model.areas) {
   const aid = `${site}/${area.id}`;
+  byAssetId.set(area.id, aid);
   add(aid, area.name, area.type, site, { value: area.value });
-  for (const a of area.assets) {
-    const id = `${aid}/${a.id}`;
-    byAssetId.set(a.id, id);
-    add(id, a.tag ? `${a.name} (${a.tag})` : a.name, a.type, aid, { fields: { ...withTag(model.types[a.type].tags, a.tag ?? ""), ...withTag(a.tags, a.tag ?? "") } });
-    if (a.nameplate && a.tag) add(`${id}/nameplate`, `${a.name} Nameplate`, "Nameplate", id, { fields: withTag(model.types.Nameplate.tags, a.tag), component: true });
-  }
+  for (const a of area.assets) addAsset(aid, a);
 }
-for (const [kind, fwd, rev] of [["feeds", "Feeds", "FedBy"], ["supplies", "Supplies", "SuppliedBy"]] as const) {
-  for (const [a, b] of model[kind]) { edge(byAssetId.get(a)!, fwd, byAssetId.get(b)!); edge(byAssetId.get(b)!, rev, byAssetId.get(a)!); }
+for (const r of model.roots ?? []) {          // people, materials, orders: their own top-level trees
+  add(r.id, r.name, r.type, null, { value: r.value });
+  for (const a of r.assets) addAsset(r.id, a);
+}
+const LINKS: Array<[string, string, Array<[string, string]>]> = [
+  ["Feeds", "FedBy", model.feeds], ["Supplies", "SuppliedBy", model.supplies],
+  ...Object.entries(model.links ?? {}).map(([fwd, l]) => [fwd, l.reverse, l.pairs] as [string, string, Array<[string, string]>]),
+];
+for (const [fwd, rev, pairs] of LINKS) for (const [a, b] of pairs) {
+  const from = byAssetId.get(a), to = byAssetId.get(b);
+  if (!from || !to) throw new Error(`${fwd}: unknown id ${from ? b : a}`);
+  edge(from, fwd, to); edge(to, rev, from);
 }
 
 // ---------------------------------------------------------------- connector (poll the plant's OPC UA server)
@@ -86,6 +119,7 @@ const raw = (v: unknown): unknown => {
 };
 function convert(spec: Spec, reads: Map<string, DataValue>): unknown {
   const s = typeof spec === "string" ? { path: spec } : spec;
+  if (s.const !== undefined) return s.const;                                          // typed in by hand
   const dv = reads.get(s.path!);
   if (!dv || !dv.statusCode.isGood() || dv.value.value === null || dv.value.value === undefined) return s.fallback ? convert(s.fallback, reads) : undefined;
   const v = dv.value.value as any;
@@ -109,6 +143,7 @@ const DERIVE: Record<string, (...a: any[]) => unknown> = {
   brix: (density: number) => round(261.3 * (1 - 998 / density)),      // °Bx ≈ 261.3·(1 − 1/SG), SG vs water at 998 kg/m³
   co2volumes: (gl: number) => round(gl / 1.977),                       // 1 volume of CO₂ ≈ 1.977 g/L
   equals: (a: unknown, b: unknown) => a === b,
+  pct: (a: number, b: number) => (b > 0 ? round((100 * a) / b, 1) : 0),
 };
 
 const client = OPCUAClient.create({ applicationName: "uns-i3x connector", endpointMustExist: false, connectionStrategy: { maxRetry: 1_000_000, initialDelay: 1000, maxDelay: 10_000 } });
@@ -131,9 +166,10 @@ async function poll() {
     let missing = 0, total = 0;
     for (const [k, s] of Object.entries(e.fields)) {
       if (typeof s !== "string" && s.derive) continue;
-      total++;
+      const optional = typeof s !== "string" && s.optional;       // e.g. finished_at before the order finishes
+      if (!optional) total++;
       const v = convert(s, reads);
-      if (v === undefined) missing++; else value[k] = v;
+      if (v === undefined) { if (!optional) missing++; } else value[k] = v;
     }
     for (const [k, s] of Object.entries(e.fields)) {   // derived values, from fields read above
       if (typeof s === "string" || !s.derive) continue;
@@ -141,11 +177,17 @@ async function poll() {
       const args = (m?.[2] ?? "").split(",").map((x) => x.trim()).map((x) => (x in value ? value[x] : x));
       if (m && DERIVE[m[1]] && args.every((x) => x !== undefined)) value[k] = DERIVE[m[1]](...args);
     }
-    const quality = missing === total ? "Bad" : missing ? "Uncertain" : "Good";
+    const quality = total && missing === total ? "Bad" : missing ? "Uncertain" : "Good";
     const next = { value: quality === "Bad" ? null : value, quality, timestamp: now };
     if (JSON.stringify(next.value) !== JSON.stringify(e.vqt.value) || next.quality !== e.vqt.quality) {
       e.vqt = next;                                     // timestamp = when the connector saw the change
       publish(e.elementId);
+    }
+    for (const m of e.metrics ?? []) {                  // the same fields as scalar leaves
+      const leaf = elements.get(m.id)!;
+      const v = quality === "Bad" ? null : value[m.key] ?? null;
+      const q = quality === "Bad" ? "Bad" : v === null ? "GoodNoData" : "Good";
+      if (v !== leaf.vqt.value || q !== leaf.vqt.quality) { leaf.vqt = { value: v, quality: q, timestamp: now }; publish(m.id); }
     }
   }
 }
@@ -195,7 +237,7 @@ const objOut = (e: Element, meta: boolean) => ({
 const types = Object.entries(model.types).map(([name, t]) => ({ elementId: name, displayName: name, namespaceUri: NS, sourceTypeId: name, version: "1.0.0", schema: t.schema }));
 const relTypes = [
   ["HasParent", "HasChildren", I3X_NS], ["HasChildren", "HasParent", I3X_NS], ["HasComponent", "ComponentOf", I3X_NS], ["ComponentOf", "HasComponent", I3X_NS],
-  ["Feeds", "FedBy", NS], ["FedBy", "Feeds", NS], ["Supplies", "SuppliedBy", NS], ["SuppliedBy", "Supplies", NS],
+  ...LINKS.flatMap(([fwd, rev]) => [[fwd, rev, NS], [rev, fwd, NS]]),
 ].map(([elementId, reverseOf, namespaceUri]) => ({ elementId, displayName: elementId, namespaceUri, relationshipId: elementId, reverseOf }));
 const bulk = <T>(keys: string[], f: (k: string) => T | undefined, what = "Element") => {
   const results = keys.map((k) => { const r = f(k); return r === undefined ? notFound("elementId", k, what) : { success: true, elementId: k, result: r }; });

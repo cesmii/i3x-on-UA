@@ -4,7 +4,7 @@
 #   npm run compare -- status       # health + address-space counts per gateway
 #   npm run compare -- conformance  # i3X conformance suite against each gateway, side by side
 #
-# Front door (http://localhost:8080):
+# Front door (http://localhost:8084):
 #   /v1/…        → the ACTIVE gateway (edit `active` below while running: it re-routes live)
 #   /cesmii/v1/… → always "cesmii";   /i3x2ua/v1/… → always "i3x2ua"
 #   /            → status page;     /_switch/<name> → change the active gateway at runtime (not saved)
@@ -14,9 +14,11 @@
 active: cesmii
 
 frontDoor:
-  port: 8080
+  port: 8084                 # NOT 8080: other services use it on the dev machine
 
 # Fairness rule: each gateway runs with its own documented defaults; only connection settings are changed.
+# `relabel:` is cosmetic and front-door only: matching displayName values in JSON responses on /<name>/v1 and /v1
+# are rewritten (header x-i3x-relabeled: 1) so Explorer windows are easy to tell apart. Direct ports are untouched.
 
 # The OPC UA server every gateway reads (our plant simulation). The launcher starts it unless something
 # already listens on the port. Containers reach the host through host.docker.internal.
@@ -32,6 +34,7 @@ conformance:
 gateways:
   cesmii:
     enabled: true
+    relabel: { "Demo Beverage Co.": "Demo Beverage Co. - CESMII" }   # front door only (cosmetic, see above)
     label: "CESMII — i3x-on-OPC gateway (TypeScript/node-opcua)"
     docs: docs/gateway/MAPPING.md
     kind: process
@@ -41,9 +44,15 @@ gateways:
       GATEWAY_PORT: ${port}
       OPCUA_ENDPOINT: ${opcua.endpoint}
       # interpretation switches, e.g. I3X_QUALITY: base · I3X_ENUMS: name · I3X_COMPONENTS_SHAPE: nested
+      # One root (user decision 2026-11-16): Demo Beverage Co. is presented as gateway:Enterprise and contains every other
+      # top-level object (Plant 1, Personnel, Materials, Orders, EquipmentClasses, Machines, the standard folders).
+      # A deliberate CESMII interpretation, not a connection setting; i3x2ua and uns are unchanged. Set "" to turn it off.
+      I3X_SINGLE_ROOT: "nsu=https://cesmii.net/i3x-demo/BeverageFactory/;s=DemoBeverageCo"
+      I3X_SINGLE_ROOT_TYPE: Enterprise
 
   i3x2ua:
     enabled: true
+    relabel: { "Demo Beverage Co.": "Demo Beverage Co. - Andreas" }   # front door only (cosmetic, see above)
     label: "Andreas Heine — i3x2ua (Python/FastAPI/asyncua)"
     docs: https://github.com/AndreasHeine/i3x2ua/blob/master/docs/OPCUA_I3X_MAPPING_PROFILE.md
     license: AGPL-3.0-or-later (run as an unmodified upstream container; no code is copied into this repo)
@@ -67,6 +76,7 @@ gateways:
 
   uns:
     enabled: true
+    relabel: { "Demo Beverage Co.": "Demo Beverage Co. - UNS" }   # front door only (cosmetic, see above)
     label: "UNS-style — hand-authored asset model over a polling connector (naive about OPC UA)"
     docs: uns/README.md
     kind: process

@@ -16,16 +16,16 @@
 import path from "node:path";
 import { MessageSecurityMode, OPCUACertificateManager, OPCUAServer, SecurityPolicy, StatusCodes, type StatusCode } from "node-opcua";
 import type { AddressSpace } from "node-opcua-address-space";
-import { BASE_NODESETS, ROOT } from "../../factory/src/lib/load.js";
+import { BASE_NODESETS, FACTORY_NODESETS, ROOT } from "../../factory/src/lib/load.js";
 import { loadPlant } from "../../factory/src/plant.js";
 import { PlantSim } from "./sim/model.js";
+import { ordersSpec } from "./sim/orders.js";
 import { UaBinder } from "./sim/bind.js";
 
 const PORT = Number(process.env.OPCUA_PORT ?? 4840);
 const SPEED = Math.max(1, Math.floor(Number(process.env.SIM_SPEED ?? 1)));
 const SEED = Number(process.env.SIM_SEED ?? 42);
 const HISTORY = Number(process.env.SIM_HISTORY ?? 3600);
-const FACTORY = path.join(ROOT, "nodesets/factory/BeverageFactory.NodeSet2.xml");
 
 const faults: Array<[string, StatusCode]> = (process.env.SIM_FAULTS ?? "").split(",").filter(Boolean).map((f) => {
   const [prefix, code] = f.split("=");
@@ -39,7 +39,7 @@ const serverCertificateManager = new OPCUACertificateManager({ rootFolder: path.
 const server = new OPCUAServer({
   port: PORT,
   resourcePath: "/UA/BeverageFactory",
-  nodesets: [...BASE_NODESETS, FACTORY],
+  nodesets: [...BASE_NODESETS, ...FACTORY_NODESETS],
   serverCertificateManager,
   buildInfo: { productName: "i3X-on-OPC Virtual Beverage Factory", manufacturerName: "CESMII i3X WG (demo)", softwareVersion: "0.3.0" },
   serverInfo: { applicationName: { text: "Virtual Beverage Factory" }, applicationUri: "urn:cesmii:i3x-demo:beverage-factory", productUri: "urn:cesmii:i3x-demo:beverage-factory" },
@@ -54,7 +54,7 @@ await server.initialize();
 // ---- simulation
 const as = server.engine.addressSpace as unknown as AddressSpace;
 const lineSpecs = plant.areas.find((a) => a.id === "BottlingLine1")!.equipment.map((e) => ({ tag: e.tag, designSpeed: e.designSpeed! }));
-const sim = new PlantSim(lineSpecs, SEED);
+const sim = new PlantSim(lineSpecs, SEED, ordersSpec(plant));
 const binder = new UaBinder(as, plant.namespace, { historyValues: HISTORY });
 const quality = (key: string) => faults.find(([p]) => key === p || key.startsWith(`${p}/`))?.[1];
 binder.write(sim.readings(), new Date(), quality);

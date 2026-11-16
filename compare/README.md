@@ -22,7 +22,7 @@ npm run compare -- conformance   # i3X conformance suite against each gateway �
 
 **Requirements:** Node 24. Docker Desktop must be running for `i3x2ua`; without it, `i3x2ua` is skipped with a message.
 
-**Front door** (`http://localhost:8080`):
+**Front door** (`http://localhost:8084`):
 
 | Path | Goes to |
 |---|---|
@@ -33,7 +33,7 @@ npm run compare -- conformance   # i3X conformance suite against each gateway �
 
 Every proxied response carries `x-i3x-gateway: <name>`. SSE and gzip pass through unchanged.
 
-**In i3X Explorer:** connect to `http://localhost:8080/v1` and flip `active:`, or add two connections, `…/cesmii/v1` and `…/i3x2ua/v1`.
+**In i3X Explorer:** connect to `http://localhost:8084/v1` and flip `active:`, or add two connections, `…/cesmii/v1` and `…/i3x2ua/v1`.
 
 ## Configuration (`gateways.yaml`)
 

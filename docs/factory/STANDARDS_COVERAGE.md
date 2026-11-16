@@ -36,9 +36,12 @@ All 11 standard NodeSets resolve against each other. The only gap is PA-DIM's IR
 | **Stacklights** | IA `BasicStacklightType` under Machinery `Monitoring/Status` | None |
 | **Health** | DI `IDeviceHealthType` (Machinery `Monitoring/Health`; PA-DIM devices have it built in) | None |
 | **Consumption** (water, CO₂, air, electricity) | Machinery `Monitoring/Consumption` + ProcessValues / PA-DIM signals | None |
-| **Product, syrup batches** *(later)* | ISA-95 `MaterialDefinitionType`, `MaterialLotType`, `MaterialSublotType` | None |
+| **Materials** (classes, definitions, lots) *(added 2026-11-16)* | ISA-95 `MaterialClassType`, `MaterialDefinitionType`, `MaterialLotType` (+ `DefinedByMaterialDefinition`) | One ReferenceType: `DefinedByMaterialClass` (see "Beyond equipment") |
+| **Personnel** (classes, persons) *(added 2026-11-16)* | ISA-95 `PersonnelClassType`, `PersonType` (+ `DefinedByPersonnelClass`) | None |
+| **Orders** (work requests, job orders) *(added 2026-11-16)* | **Not in ISA-95 COM 1.00.** OPC 10031-4 (Job Control) has job orders, but as Structures passed to a `JobOrderReceiver`'s methods, not as Objects | `WorkRequestType`, `JobOrderType` |
+| **Links between those models and equipment** *(added 2026-11-16)* | **Not in ISA-95 COM 1.00** | `Operates`, `Consumes`, `Produces`, `StoredIn`, `DispatchedTo` |
 
-**Bottom line:** the plant can be built with **no ObjectTypes or ReferenceTypes of our own**. The only non-standard types are the user-supplied Acme vendor profile. Our `BeverageFactory` namespace holds only instances and ISA-95 equipment-class instances.
+**Bottom line:** the *equipment* side of the plant needs **no ObjectTypes or ReferenceTypes of our own**; the only non-standard types there are the user-supplied Acme vendor profile. The personnel / materials / orders extension (2026-11-16) needs two ObjectTypes and six ReferenceTypes, kept in their own types namespace `https://cesmii.net/i3x-demo/ISA95Operations/`. The `BeverageFactory` namespace still holds only instances.
 
 ## Mapping consequences for the i3X layer (things to call out in `metadata.opcua`)
 
@@ -80,3 +83,25 @@ All 11 standard NodeSets resolve against each other. The only gap is PA-DIM's IR
 
 - **P1-a Tanks (decided 2026-11-05):** Acme `MixingTankType` for the mixing vessels (SD-201, T-201, T-202); ISA-95 Equipment for storage/buffer tanks (T-101, T-102, T-301).
 - **P1-b Flow (decided 2026-11-05):** Pumps port types (`Direction`, `Category`) joined by DI `ConnectsTo` from Out port to In port. This is our documented convention, flagged in i3X as not spec-mandated.
+
+## Beyond equipment: ISA-95 COM 1.00 checked for personnel, materials and orders (2026-11-16)
+
+Design: `PLANT_DESIGN.md` §8. Types: `factory/src/ops-types.ts` → `nodesets/factory/ISA95Operations.NodeSet2.xml`.
+
+**What COM 1.00 covers and what we use as-is:** `PersonnelClassType`, `PersonType`, `DefinedByPersonnelClass`; `MaterialClassType`, `MaterialDefinitionType`, `MaterialLotType` (optional `Status`, `StorageLocation`, `Quantity`), `DefinedByMaterialDefinition`.
+
+**Gaps, and what we added (ISA95Operations namespace):**
+
+| Gap | Added | Basis for the name |
+|---|---|---|
+| No work model (Part 4): no work request or job order Objects. OPC 10031-4 has job orders only as Structures (`ISA95JobOrderDataType`) on a `JobOrderReceiver`, so an i3X client would see an array value, not an order hierarchy | `WorkRequestType`, `JobOrderType` (← COM `ISA95ObjectType`) | ISA-95 Part 4 objects; field and state names from OPC 10031-4 |
+| No reference from a MaterialDefinition to its MaterialClass (equipment and personnel have `DefinedByEquipmentClass` / `DefinedByPersonnelClass`) | `DefinedByMaterialClass` / `MaterialClassOf`, subtype of COM's abstract `DefinedBy` | COM's own naming pattern |
+| No references between resource models or from work to resources | `Operates`/`OperatedBy`, `Consumes`/`ConsumedBy`, `Produces`/`ProducedBy`, `StoredIn`/`StorageLocationOf`, `DispatchedTo`/`ReceivesJobOrder`, all ← `NonHierarchicalReferences` | ISA-95 vocabulary: material use Consumed/Produced, MaterialLot "Storage Location", dispatching, 10031-4 JobOrderReceiver |
+
+**Defects in the COM 1.00 NodeSet found on the way** (kept as-is: we never modify OPC Foundation NodeSets; candidates for the WG and OPC Foundation):
+
+1. `MaterialDefinitionType`'s `<MaterialClass>` placeholder (i=5224) has **no reference from the type at all**, only a `ParentNodeId`. Compare `PersonType`'s `<PersonnelClass>`, which hangs off `DefinedByPersonnelClass`.
+2. `DefinedByMaterialDefinition` (i=5301) has InverseName **`MaterialClassOf`**: a copy-paste slip (expected `MaterialDefinitionOf`). It shows up in i3X as the relationship type `ISA95:MaterialClassOf` on a material definition, next to our correctly named `ISA95Operations:MaterialClassOf`.
+3. `LocatedIn` / `LocationOf` (i=5114), the obvious candidate for a lot's storage location, is a **subtype of `HasProperty`**, and its Description is copied from `ResultsForSpecification` ("…test results…"). A HasProperty target must be a Property, so it can't link a lot to equipment. A generic gateway would treat the target as an attribute. Hence our `StoredIn`.
+4. `MaterialLotType`'s `<MaterialDefinition>` (i=5242) has a placeholder-style BrowseName but ModellingRule **Optional**, not a placeholder. We reference the shared definition instead of instantiating it.
+5. A lot's `Quantity` has no DataType (BaseDataType) and no unit. The generator writes a Double and adds an `EngineeringUnits` Property, as it already does for equipment ratings.

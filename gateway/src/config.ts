@@ -15,6 +15,10 @@ export interface Interpretation {
   synthesizeFlow: boolean;
   quality: "detailed" | "base";
   componentsShape: "flat" | "nested";
+  /** NodeId (nsu= form) of the Object to present as the single i3X root; "" = off (every child of Objects is a root). */
+  singleRoot: string;
+  /** Display name of the gateway ObjectType the single root is re-typed to (gateway:<name>). */
+  singleRootType: string;
 }
 export interface Config {
   opcua: { endpoint: string };
@@ -42,5 +46,7 @@ export function loadConfig(): Config {
     const v = env[`I3X_${k.replace(/[A-Z]/g, (m) => "_" + m).toUpperCase()}`];
     if (v !== undefined) (c.interpretation as any)[k] = typeof c.interpretation[k] === "boolean" ? v === "true" : v;
   }
+  c.interpretation.singleRoot ??= "";
+  c.interpretation.singleRootType ||= "Enterprise";
   return c;
 }

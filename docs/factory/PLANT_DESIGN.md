@@ -204,3 +204,55 @@ Objects
 2. **Namespace URI** `https://cesmii.net/i3x-demo/BeverageFactory/`: **approved.**
 3. **Conveyor material links** (24–29): **not for now.**
 4. **Accumulation conveyors:** **not modeled.** Starved and blocked stay as machine states only.
+
+## 8. Beyond equipment: personnel, materials and orders (added 2026-11-16)
+
+**Why:** a fair critique of the i3X demos is that they only ever model equipment, so i3X looks like an asset-tree API. ISA-95 has four resource models (equipment, personnel, physical assets, material) plus a work model (Part 4). The plant now has three more top-level hierarchies, connected to the equipment hierarchy and to each other **only by graph (non-hierarchical) references**. Source of truth: the `personnel`, `materials` and `orders` sections of `factory/plant/line1.yaml`.
+
+```
+Objects
+├── Demo Beverage Co. … (equipment, §5)
+├── Personnel
+│   ├── Personnel Classes        ShiftSupervisor, LineOperator, ProcessOperator, MaintenanceTech, QualityTech   (ISA-95 PersonnelClassType)
+│   └── Persons                  E-1001 … E-1007 (fictitious)                                                   (ISA-95 PersonType)
+├── Materials
+│   ├── Material Classes         Water, Sweetener, Flavor, ProcessGas, Intermediate, Packaging, FinishedGood    (ISA-95 MaterialClassType)
+│   ├── Material Definitions     TreatedWater, GranulatedSugar, ColaConcentrate, CO2, SimpleSyrup, FinalSyrup,
+│   │                            PETBottle, Closure, Label, Case, Pallet, Cola500                               (ISA-95 MaterialDefinitionType)
+│   └── Material Lots            SUG-2611-07, CNC-2611-02, CO2-2611-01, SYR-2611-16, PET-…, CAP-…, LBL-…,
+│                                CSE-…, PLT-…, FG-2611-0042, FG-2611-0043                                       (ISA-95 MaterialLotType)
+└── Orders
+    ├── WR-2611-0042 Cola 500 mL PET, shift A        WorkRequestType (ours)
+    │   ├── JO-0042-10 Prepare final syrup           JobOrderType (ours), HasComponent
+    │   ├── JO-0042-20 Blend and carbonate
+    │   └── JO-0042-30 Fill, cap, label and pack
+    └── WR-2611-0043 Cola 500 mL PET, shift B        (same three job orders)
+```
+
+**Graph references** (forward name / inverse name; all non-hierarchical, so the i3X gateways show them as graph relationships, never as a second parent):
+
+| From → To | Reference | Inverse | Source | Example |
+|---|---|---|---|---|
+| Person → PersonnelClass | `DefinedByPersonnelClass` | `PersonnelClassOf` | ISA-95 COM | E-1002 → LineOperator |
+| MaterialLot → MaterialDefinition | `DefinedByMaterialDefinition` | `MaterialClassOf` ⚠️ | ISA-95 COM | SYR-2611-16 → FinalSyrup |
+| MaterialDefinition → MaterialClass | `DefinedByMaterialClass` | `MaterialClassOf` | **ours** (COM gap) | FinalSyrup → Intermediate |
+| Person → Equipment | `Operates` | `OperatedBy` | **ours** | E-1002 → FL-401, CP-402, LB-403 |
+| Equipment or JobOrder → MaterialLot | `Consumes` | `ConsumedBy` | **ours** (ISA-95 material use "Consumed") | FL-401 → PET-2611-11; JO-0042-20 → SYR-2611-16 |
+| Equipment or JobOrder → MaterialLot | `Produces` | `ProducedBy` | **ours** (material use "Produced") | Bottling Line 1 → FG-2611-0042; T-202 → SYR-2611-16 |
+| MaterialLot → Equipment | `StoredIn` | `StorageLocationOf` | **ours** (MaterialLot "Storage Location") | CO2-2611-01 → CO2-901 |
+| JobOrder → Equipment | `DispatchedTo` | `ReceivesJobOrder` | **ours** (Part 3 dispatching; OPC 10031-4 JobOrderReceiver) | JO-0042-30 → Bottling Line 1 |
+
+Job orders are dispatched to the **area or line** (the ISA-95 work center), not to single machines; `Operates`, `Consumes` and `Produces` point at machines where that is the natural grain. The user's first suggestions (operatedBy/operates, processedBy/processes, jobReceiver) map to `Operates`, `Consumes`/`Produces` (ISA-95 distinguishes the two material uses) and `DispatchedTo`/`ReceivesJobOrder`.
+
+**Types.** Personnel and material use ISA-95 COM 1.00 types unchanged. COM has no work model, so `WorkRequestType` and `JobOrderType` (both ← COM `ISA95ObjectType`) and the six ReferenceTypes above live in a separate **types namespace**, `https://cesmii.net/i3x-demo/ISA95Operations/` (`nodesets/factory/ISA95Operations.NodeSet2.xml`, generated from `factory/src/ops-types.ts`). Keeping them out of the instance namespace means another server could load them, and the i3X ids read `ISA95Operations:Operates`, not `BeverageFactory:Operates`. Why each one exists is in `STANDARDS_COVERAGE.md`, "Beyond equipment".
+
+| Type | Properties (M = Mandatory) | DataVariables (live) |
+|---|---|---|
+| `WorkRequestType` | WorkRequestID M, Description M, Priority, StartTime, EndTime | `State` (String), `<JobOrder>` OptionalPlaceholder (HasComponent → JobOrderType) |
+| `JobOrderType` | JobOrderID M, Description M, WorkMasterID M, Priority, StartTime, EndTime | `State` (String), `PlannedQuantity`, `ActualQuantity` (AnalogUnitType, with EngineeringUnits) |
+
+Field and state names follow OPC 10031-4 (`ISA95JobOrderDataType`; states `NotAllowedToStart`, `AllowedToStart`, `Running`, `Interrupted`, `Ended`, `Aborted`), so moving to 10031-4 later is a rename. A work request **composes** its job orders (HasComponent), so one i3X `maxDepth: 0` read returns the whole order with live progress.
+
+**Material lots:** `Status`, `StorageLocation` (the tag as text, mirroring the `StoredIn` reference) and `Quantity` (with EngineeringUnits) are COM's optional lot attributes. Lots with no storage location omit it. Live quantities: SYR-2611-16 = T-202 volume (m³), CO2-2611-01 = CO₂ tank inventory (t), FG lots = their packing job's count (pce). Raw-material and packaging lots are static (inventory isn't simulated).
+
+**IDs:** `s=Person/E-1002`, `s=PersonnelClass/LineOperator`, `s=MaterialClass/Packaging`, `s=Material/PETBottle`, `s=Lot/PET-2611-11`, `s=Orders/WR-2611-0042/JO-0042-30`; folders `s=Personnel`, `s=Personnel/Persons`, ….

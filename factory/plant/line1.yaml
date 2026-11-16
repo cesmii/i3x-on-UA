@@ -26,6 +26,9 @@ units:
   rpm:   { code: RPM, symbol: r/min, name: revolutions per minute }
   mm/s:  { code: C16, symbol: mm/s, name: millimetre per second }            # *
   1/min: { code: C94, symbol: min⁻¹, name: reciprocal minute }               # *
+  kg:    { code: KGM, symbol: kg, name: kilogram }
+  t:     { code: TNE, symbol: t, name: tonne }
+  pce:   { code: H87, symbol: pce, name: piece }
 
 vendors:
   acme:      { manufacturer: Acme Process Systems,  uri: https://acme.example }
@@ -365,3 +368,88 @@ links:
   - [CO2-901.CO2Out, CB-301.CO2In]
   - [CB-301.BeverageOut, T-301.BeverageIn]
   - [T-301.BeverageOut, FL-401.BeverageIn]
+
+# ---------------------------------------------------------------------------------------------
+# Beyond equipment: Personnel, Materials and Orders (ISA-95 resource + work models).
+# Each is its own top-level hierarchy (folder Organized by Objects). They connect to the
+# equipment hierarchy and to each other only by non-hierarchical (graph) references.
+# ISA-95 COM (OPC 10030) types where they exist; the gaps (work model, cross-model
+# references) are in our ISA95Operations types namespace. Design: docs/factory/PLANT_DESIGN.md §8.
+# Equipment targets: an equipment tag, or "<site>/<area id>" for an area / line.
+# ---------------------------------------------------------------------------------------------
+
+# Personnel (ISA-95 Part 2 §5.3). Persons and names are fictitious.
+personnel:
+  classes:                                  # PersonnelClassType instances
+    ShiftSupervisor:   { name: Shift Supervisor }
+    LineOperator:      { name: Packaging Line Operator }
+    ProcessOperator:   { name: Process Operator }
+    MaintenanceTech:   { name: Maintenance Technician }
+    QualityTech:       { name: Quality Technician }
+  persons:                                  # PersonType instances; operates → Operates/OperatedBy
+    E-1001: { name: Avery Chen,     class: ShiftSupervisor }
+    E-1002: { name: Jordan Okafor,  class: LineOperator,    operates: [FL-401, CP-402, LB-403] }
+    E-1003: { name: Sam Lindqvist,  class: LineOperator,    operates: [CK-404, PZ-405] }
+    E-1004: { name: Riley Moreno,   class: ProcessOperator, operates: [SD-201, T-201, T-202] }
+    E-1005: { name: Casey Nakamura, class: ProcessOperator, operates: [RO-101, DA-301, BL-301, CB-301] }
+    E-1006: { name: Morgan Patel,   class: MaintenanceTech }
+    E-1007: { name: Taylor Brooks,  class: QualityTech }
+
+# Materials (ISA-95 Part 2 §5.6).
+materials:
+  classes:                                  # MaterialClassType instances
+    Water:        { name: Water }
+    Sweetener:    { name: Sweetener }
+    Flavor:       { name: Flavor Concentrate }
+    ProcessGas:   { name: Process Gas }
+    Intermediate: { name: Intermediate Product }
+    Packaging:    { name: Packaging Material }
+    FinishedGood: { name: Finished Good }
+  definitions:                              # MaterialDefinitionType instances → DefinedByMaterialClass
+    TreatedWater:    { name: Treated Water (RO permeate),     class: Water }
+    GranulatedSugar: { name: Granulated Sugar (EU 2),         class: Sweetener }
+    ColaConcentrate: { name: Cola Flavor Concentrate K-7,     class: Flavor }
+    CO2:             { name: Food-Grade CO2 (ISBT),           class: ProcessGas }
+    SimpleSyrup:     { name: Simple Syrup 65 °Bx,             class: Intermediate }
+    FinalSyrup:      { name: Cola Final Syrup,                class: Intermediate }
+    PETBottle:       { name: PET Bottle 500 mL,               class: Packaging }
+    Closure:         { name: Closure PCO 1881 28 mm,          class: Packaging }
+    Label:           { name: Wrap-Around Label Cola 500 mL,   class: Packaging }
+    Case:            { name: Shrink Tray 24 × 500 mL,         class: Packaging }
+    Pallet:          { name: EUR Pallet,                      class: Packaging }
+    Cola500:         { name: Cola 500 mL PET,                 class: FinishedGood }
+  # MaterialLotType instances → DefinedByMaterialDefinition. quantity: [initial, unit];
+  # storedIn → StoredIn/StorageLocationOf; consumedBy → Consumes/ConsumedBy (from the equipment);
+  # producedBy → Produces/ProducedBy (from the equipment). Quantities marked (sim) are live.
+  lots:
+    SUG-2611-07:   { definition: GranulatedSugar, quantity: [25000, kg], status: Released, storedIn: SugarSupply,       consumedBy: [SD-201] }
+    CNC-2611-02:   { definition: ColaConcentrate, quantity: [1200, kg],  status: Released, storedIn: ConcentrateSupply, consumedBy: [T-202] }
+    CO2-2611-01:   { definition: CO2,             quantity: [21, t],     status: Released, storedIn: CO2-901,           consumedBy: [CB-301] }   # (sim)
+    SYR-2611-16:   { definition: FinalSyrup,      quantity: [8, m3],     status: Released, storedIn: T-202, producedBy: [T-202], consumedBy: [BL-301] }  # (sim)
+    PET-2611-11:   { definition: PETBottle,       quantity: [120000, pce], status: Released, consumedBy: [FL-401] }
+    CAP-2611-05:   { definition: Closure,         quantity: [150000, pce], status: Released, consumedBy: [CP-402] }
+    LBL-2611-03:   { definition: Label,           quantity: [100000, pce], status: Released, consumedBy: [LB-403] }
+    CSE-2611-09:   { definition: Case,            quantity: [6000, pce],   status: Released, consumedBy: [CK-404] }
+    PLT-2611-02:   { definition: Pallet,          quantity: [100, pce],    status: Released, consumedBy: [PZ-405] }
+    FG-2611-0042:  { definition: Cola500,         quantity: [0, pce],      status: InProduction, producedBy: [Plant1/BottlingLine1] }  # (sim)
+    FG-2611-0043:  { definition: Cola500,         quantity: [0, pce],      status: Planned,      producedBy: [Plant1/BottlingLine1] }  # (sim)
+
+# Orders (ISA-95 Part 4 work model: work request → job orders). Job order fields and states follow
+# OPC 10031-4 (ISA-95 Job Control) ISA95JobOrderDataType / ISA95JobOrderStateMachineType names.
+# dispatchedTo → DispatchedTo/ReceivesJobOrder; consumes/produces → material lots.
+# plannedQuantity: [value, unit]. The simulator runs the two work requests alternately (SIMULATION.md, "Orders and material lots").
+orders:
+  WR-2611-0042:
+    description: Cola 500 mL PET, shift A
+    priority: 1
+    jobOrders:
+      JO-0042-10: { description: Prepare final syrup,      workMaster: WM-SYRUP-COLA,  dispatchedTo: Plant1/SyrupRoom,           plannedQuantity: [13.4, m3],  consumes: [SUG-2611-07, CNC-2611-02], produces: [SYR-2611-16] }
+      JO-0042-20: { description: Blend and carbonate,      workMaster: WM-BLEND-COLA,  dispatchedTo: Plant1/BlendingCarbonation, plannedQuantity: [80, m3],    consumes: [SYR-2611-16, CO2-2611-01] }
+      JO-0042-30: { description: "Fill, cap, label and pack", workMaster: WM-PACK-500-24, dispatchedTo: Plant1/BottlingLine1,       plannedQuantity: [160000, pce], consumes: [PET-2611-11, CAP-2611-05, LBL-2611-03, CSE-2611-09, PLT-2611-02], produces: [FG-2611-0042] }
+  WR-2611-0043:
+    description: Cola 500 mL PET, shift B
+    priority: 2
+    jobOrders:
+      JO-0043-10: { description: Prepare final syrup,      workMaster: WM-SYRUP-COLA,  dispatchedTo: Plant1/SyrupRoom,           plannedQuantity: [13.4, m3],  consumes: [SUG-2611-07, CNC-2611-02], produces: [SYR-2611-16] }
+      JO-0043-20: { description: Blend and carbonate,      workMaster: WM-BLEND-COLA,  dispatchedTo: Plant1/BlendingCarbonation, plannedQuantity: [80, m3],    consumes: [SYR-2611-16, CO2-2611-01] }
+      JO-0043-30: { description: "Fill, cap, label and pack", workMaster: WM-PACK-500-24, dispatchedTo: Plant1/BottlingLine1,       plannedQuantity: [160000, pce], consumes: [PET-2611-11, CAP-2611-05, LBL-2611-03, CSE-2611-09, PLT-2611-02], produces: [FG-2611-0043] }

@@ -20,6 +20,8 @@ Project goal (inferred): expose OPC UA information models through the **CESMII i
 
 Read the relevant file before implementing an endpoint; the summary below is a map, not a substitute.
 
+**Not in git:** the OPC Foundation spec PDFs/extracts (`docs/machinery/`, `docs/opcua/`) and the PMMI files (`docs/pmmi/`) are local copies only (`.gitignore`); each folder's `README.md` says where to download them. Never re-add them: the repo is meant to be public. The NodeSets in `nodesets/standard/` are OPC Foundation MIT and stay tracked; `docs/i3x/` is CESMII MIT (attribution in its README).
+
 ## Working documents (project root)
 
 These are working-group deliverables for the 12-month "i3X over OPC UA" workstream, kicked off 2026-11-03. Treat the versions on disk as current; the user edits them.
@@ -28,16 +30,17 @@ These are working-group deliverables for the 12-month "i3X over OPC UA" workstre
 |---|---|
 | `WG_AGENDA_i3X_OPC_UA.md` | Kickoff agenda: 8 topics, with item 4 (types → JSON Schema) as the deep dive |
 | `BEVERAGE_FACTORY_PLAN.md` | Phased plan for the virtual beverage factory: a standards-based OPC UA model (node-opcua) projected to i3X by a generic gateway, with `metadata.opcua` fidelity notes; decisions D1–D8 (incl. pure Machinery + PackML for machines, Line 2 with injected hack-a-thon faults, Nginx handles TLS/auth) |
-| `docs/factory/` | Factory design: `STANDARDS_COVERAGE.md` (Phase 0 result + Acme review + P1 decisions), `PLANT_DESIGN.md` (Phase 1: equipment, instruments, flow links, hierarchy, IDs, simulation), `UA_MODEL_NOTES.md` (Phase 2: spike, node-opcua conventions, what the generator builds, deferred items, standards observations), `SIMULATION.md` (Phase 3), `PLANT_DIAGRAM.md` (Mermaid source with legend; `.mmd` exports for the user's Mermalaid app; validate and re-export after edits) |
+| `docs/factory/` | Factory design: `STANDARDS_COVERAGE.md` (Phase 0 result + Acme review + P1 decisions + ISA-95 COM gaps/defects for personnel, materials, orders), `PLANT_DESIGN.md` (Phase 1: equipment, instruments, flow links, hierarchy, IDs, simulation), `UA_MODEL_NOTES.md` (Phase 2: spike, node-opcua conventions, what the generator builds, deferred items, standards observations), `SIMULATION.md` (Phase 3), `PLANT_DIAGRAM.md` (Mermaid source with legend; `.mmd` exports for the user's Mermalaid app; validate and re-export after edits) |
 | `docs/WALKTHROUGH.md` | Phase 6 guided compare: 13 stops (filler, nameplate, state, counts, methods, units, Int64, flow, vendor profile, history, notes), each found in UaExpert, cesmii, i3x2ua and uns |
-| `docs/gateway/COMPARISON.md` | Ours vs Andreas Heine's i3x2ua: 42 observed differences (identity, objects, references, types, values, quality, writes, self-description), each with the element to inspect in both gateways and the WG question it raises |
+| `docs/gateway/COMPARISON.md` | Ours vs Andreas Heine's i3x2ua: 47 observed differences (identity, objects, references, types, values, quality, writes, self-description, personnel/materials/orders), each with the element to inspect in both gateways and the WG question it raises |
 | `NODESET_TO_JSON_SCHEMA_ANALYSIS.md` | Item 4 analysis: NodeSet vs JSON Schema 2020-12 fidelity matrix, proposed `x-opcua` annotations, Machinery worked example, decisions list |
 
 ## Code layout (npm workspaces, TypeScript, Node 24)
 - Root `package.json` holds the workspaces (`factory`, `server`, `gateway`), plus pinned dev tools (typescript 5.9.3, tsx 4.23.15). Pin exact versions that are at least 2 weeks old.
 - `factory/`: node-opcua **2.187.10** + node-opcua-address-space **2.187.9**.
   - `plant/line1.yaml` is the plant definition and source of truth.
-  - `npm run generate -w factory` writes `nodesets/factory/BeverageFactory.NodeSet2.xml` (deterministic; commit-worthy). `npm run verify -w factory` checks it.
+  - `npm run generate -w factory` writes `nodesets/factory/ISA95Operations.NodeSet2.xml` (our leftover types: `WorkRequestType`, `JobOrderType`, and the ISA-95 cross-model ReferenceTypes `Operates`, `Consumes`, `Produces`, `StoredIn`, `DispatchedTo`, `DefinedByMaterialClass`; source `src/ops-types.ts`) and `nodesets/factory/BeverageFactory.NodeSet2.xml` (instances). Both are deterministic and commit-worthy; `FACTORY_NODESETS` in `src/lib/load.ts` lists them. `npm run verify -w factory` checks them.
+  - Top-level hierarchies: equipment (Enterprise → Site → Areas), `EquipmentClasses`, `Machines`, and (since 2026-11-16) `Personnel`, `Materials`, `Orders` (ISA-95 resource + work models, linked to equipment only by graph references; `docs/factory/PLANT_DESIGN.md` §8).
   - `src/tools/inspect-type.ts` prints a type's member tree; `src/tools/browse.ts` is a generic client browse.
   - `factory/out/` is scratch space.
 - `server/`: `npm start -w server` → `opc.tcp://localhost:4840/UA/BeverageFactory`. It loads `BASE_NODESETS` + the generated NodeSet and runs the Line 1 simulation (`server/src/sim/`).
@@ -48,13 +51,15 @@ These are working-group deliverables for the 12-month "i3X over OPC UA" workstre
 - `gateway/`: our OPC UA → i3X gateway. `npm start -w gateway` → `http://localhost:8081/v1`. Config: `gateway/gateway.config.yaml`; interpretation switches can be overridden with `I3X_<KEY>` env vars.
   - The interpretation is in `docs/gateway/MAPPING.md`; build notes and results are in `docs/gateway/GATEWAY.md`.
   - It must stay **generic** (OPC UA services only; companion-spec logic only in `src/profiles/`, switchable) and **independent** of the other WG member's gateway (D9).
+  - Switch `singleRoot` (+ `singleRootType`): one named Object becomes the only i3X root, re-typed `gateway:Enterprise`, and all other top-level Objects become its children. Off in `gateway.config.yaml`; on for cesmii in `compare/gateways.yaml` (Demo Beverage Co., user decision 2026-11-16).
+  - The compare front door (:8084) relabels "Demo Beverage Co." per gateway (`relabel:` in `compare/gateways.yaml`), so Explorer windows can be told apart. It's cosmetic; the direct ports are untouched.
   - Conformance check: `cd ~/Projects/API/conformance-tests && node bin/i3x-test.js run http://localhost:8081/v1`. Run it only; don't modify that repo.
   - Fidelity audit (Phase 6): `npm run audit -w gateway` (plant server + gateway running). It reads the plant as a plain OPC UA client, independent of the gateway's code, and exits 1 if any loss isn't described in the i3X output. The catalogue is `docs/gateway/FIDELITY.md`. Any new mapping rule that loses information needs a fidelity note **and** an audit rule.
 - **`./start.sh`** (root): one-step start for macOS/Linux/WSL. It checks Node, runs `npm ci` if needed, copies `.env.example` → `.env` (sim settings + `I3X_*` switches, gitignored), generates the NodeSet if missing, checks Docker, then `npm run compare`. Also `./start.sh status|conformance`. It re-execs itself under bash when started from zsh/sh, and keeps to bash 3.2 features (macOS `/bin/bash`).
-- `uns/`: third comparison point, a **naive UNS-style i3X server**. `model.yaml` is hand-authored (asset tree, company types, flat JSON payloads, OPC UA tag map, Feeds/Supplies graph); `src/main.ts` polls the plant every second and serves i3X on :8083 (`/uns/v1`). Deliberately ignores OPC UA types and references; design notes and "shape it" ideas are in `uns/README.md`. Conformance: 1.0 Compatible.
+- `uns/`: third comparison point, a **naive UNS-style i3X server**. `model.yaml` is hand-authored (asset tree plus `roots:` people/materials/orders, company types, flat JSON payloads, OPC UA tag map, Feeds/Supplies + hand-named `links:` graph); `src/main.ts` polls the plant every second and serves i3X on :8083 (`/uns/v1`). Deliberately ignores OPC UA types and references; design notes and "shape it" ideas are in `uns/README.md`. Conformance: 1.0 Compatible.
 - `compare/`: the gateway switch (D9).
   - `compare/gateways.yaml` (`active:` is switched live) and `npm run compare [-- status|conformance]`.
-  - Front door on :8080: `/v1` → active, `/cesmii/v1` (ours, :8081), `/i3x2ua/v1` (:8082), `/uns/v1` (:8083).
+  - Front door on :8084: `/v1` → active, `/cesmii/v1` (ours, :8081), `/i3x2ua/v1` (:8082), `/uns/v1` (:8083).
   - `i3x2ua` = Andreas Heine's **i3x2ua** (AGPL), run as an unmodified pinned container (`ghcr.io/andreasheine/i3x2ua:1.16.2`, port 8082). His mapping profile: `docs/OPCUA_I3X_MAPPING_PROFILE.md` in that repo. Never copy his code into this repo.
   - Fairness rule: each gateway runs with its own documented defaults; only connection settings change. Docker Desktop is needed for `i3x2ua`.
   - Lifecycle: one Ctrl-C stops all it started. Keep launcher-managed processes free of npm/tsx wrappers (`node --import tsx …`): wrappers forward a second SIGINT and tsx force-kills its child on the second one, which orphaned processes before.
@@ -63,7 +68,7 @@ These are working-group deliverables for the 12-month "i3X over OPC UA" workstre
 - Workspace scripts run under zsh: split variables explicitly (`${=var}`) when looping over argument strings.
 - node-opcua gotchas: set `NamespaceOptions.nodeIdNameSeparator = "/"`; pass `namespace:` to `instantiate()`; list Optional members in `optionals`; import the loader from `node-opcua-address-space/nodeJS.js` (with the `.js`, which NodeNext requires). See `docs/factory/UA_MODEL_NOTES.md`.
 
-Related i3X work: the demo-server alignment in cesmii/i3X (`/Users/jonwise/Projects/API`) is PR #362, branch `demo-openapi-alignment`.
+Related i3X work: the demo-server alignment in cesmii/i3X (`~/Projects/API`) is PR #362, branch `demo-openapi-alignment`.
 
 ## i3X in one screen
 

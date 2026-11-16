@@ -5,9 +5,9 @@
 | View | Connect to | What it is |
 |---|---|---|
 | **UA** | UaExpert → `opc.tcp://localhost:4840/UA/BeverageFactory` (security None) | The standards-based model (Machinery, PackML, PA-DIM, Pumps, ISA-95, Acme) |
-| **cesmii** | Explorer → `http://localhost:8080/cesmii/v1` | Our gateway: generic, with fidelity notes in `metadata.opcua` (`docs/gateway/MAPPING.md`) |
-| **i3x2ua** | Explorer → `http://localhost:8080/i3x2ua/v1` | Andreas Heine's gateway, run with its defaults |
-| **uns** | Explorer → `http://localhost:8080/uns/v1` | A naive, hand-authored UNS-style model (`uns/README.md`) |
+| **cesmii** | Explorer → `http://localhost:8084/cesmii/v1` | Our gateway: generic, with fidelity notes in `metadata.opcua` (`docs/gateway/MAPPING.md`) |
+| **i3x2ua** | Explorer → `http://localhost:8084/i3x2ua/v1` | Andreas Heine's gateway, run with its defaults |
+| **uns** | Explorer → `http://localhost:8084/uns/v1` | A naive, hand-authored UNS-style model (`uns/README.md`) |
 
 Start everything with `./start.sh`.
 

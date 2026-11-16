@@ -13,7 +13,17 @@ namespace: https://demo-beverage.example/uns
 plantNamespace: https://cesmii.net/i3x-demo/BeverageFactory/
 pollMs: 1000
 
+# Sparkplug-style metrics (added 2026-11-16): every polled field of an asset is ALSO published as its own leaf
+# (<asset>/<field>, a composition child) with a bare scalar value, so it can be trended and subscribed to alone.
+# The leaf type follows the field's schema type: number → Metric, integer → Counter, boolean → Flag, string → Text.
+metrics: true
+
 types:
+  Metric:  { description: "Numeric metric (unit in the field name, e.g. level_m)", schema: { type: number } }
+  Counter: { description: Integer metric (counts), schema: { type: integer } }
+  Flag:    { description: On/off metric, schema: { type: boolean } }
+  Text:    { description: Text metric (states, names), schema: { type: string } }
+
   Enterprise: { description: Company, schema: { type: object, properties: { name: { type: string } } } }
   Site:       { description: Manufacturing site, schema: { type: object, properties: { name: { type: string }, timezone: { type: string } } } }
   Area:       { description: Plant area, schema: { type: object, properties: { name: { type: string } } } }
@@ -188,6 +198,67 @@ types:
     description: Compressed air supply
     schema: { type: object, properties: { header_pressure_bar: { type: number } } }
 
+  # ---- beyond equipment (added 2026-11-16): people, materials, orders. Same persona: company types,
+  # flat payloads, roles and material names typed in by hand; live numbers polled from the plant's tags.
+  Group:
+    description: Grouping node at the top of the tree
+    schema: { type: object, properties: { name: { type: string } } }
+
+  Person:
+    description: Employee (copied from the HR roster)
+    schema: { type: object, properties: { name: { type: string }, role: { type: string }, shift: { type: string } } }
+
+  MaterialLot:
+    description: A lot of raw material, packaging, syrup or finished product
+    schema:
+      type: object
+      properties:
+        material: { type: string }
+        category: { type: string }
+        status: { type: string }
+        qty: { type: number }
+        unit: { type: string }
+        location: { type: string }
+    tags:
+      status: "{tag}/Status"
+      qty: "{tag}/Quantity"
+      location: { path: "{tag}/StorageLocation", optional: true }
+
+  WorkOrder:
+    description: Production order from the MES
+    schema:
+      type: object
+      properties:
+        product: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+    tags:
+      status: "{tag}/State"
+      started_at: { path: "{tag}/StartTime", optional: true }
+      finished_at: { path: "{tag}/EndTime", optional: true }
+
+  Job:
+    description: One step of a work order, run on one area or line
+    schema:
+      type: object
+      properties:
+        step: { type: string }
+        status: { type: string }
+        planned: { type: number }
+        actual: { type: number }
+        unit: { type: string }
+        pct_complete: { type: number }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+    tags:
+      status: "{tag}/State"
+      planned: "{tag}/PlannedQuantity"
+      actual: "{tag}/ActualQuantity"
+      pct_complete: { derive: "pct(actual, planned)" }
+      started_at: { path: "{tag}/StartTime", optional: true }
+      finished_at: { path: "{tag}/EndTime", optional: true }
+
 # The tree. id = topic-style path segment; tag = the plant tag the connector reads from; nameplate: true adds
 # a <asset>/nameplate composition child. `tags` here are asset-specific (instrument tags differ per asset).
 enterprise: { id: demobev, name: Demo Beverage Co., value: { name: Demo Beverage Co. } }
@@ -255,6 +326,59 @@ areas:
           tags: { level_pct: LT-901/SignalSet/Level/AnalogSignal, pressure_bar: PT-901/SignalSet/Pressure/AnalogSignal } }
       - { id: compressed-air, name: Compressed Air, type: AirCompressor, tag: AC-902, tags: { header_pressure_bar: PT-902/SignalSet/Pressure/AnalogSignal } }
 
+# Extra top-level trees (added 2026-11-16). Same shape as an area; `value` = static payload, `tags` = polled
+# fields (`{ const: … }` = typed-in text), `children` = nested items (hierarchy, not composition).
+# `tag` here is the OPC UA path prefix the connector reads from (picked in UaExpert).
+roots:
+  - id: people
+    name: People
+    type: Group
+    assets:
+      - { id: e-1001, name: Avery Chen,     type: Person, value: { name: Avery Chen,     role: Shift Supervisor, shift: A } }
+      - { id: e-1002, name: Jordan Okafor,  type: Person, value: { name: Jordan Okafor,  role: Line Operator,    shift: A } }
+      - { id: e-1003, name: Sam Lindqvist,  type: Person, value: { name: Sam Lindqvist,  role: Line Operator,    shift: A } }
+      - { id: e-1004, name: Riley Moreno,   type: Person, value: { name: Riley Moreno,   role: Syrup Room,       shift: A } }
+      - { id: e-1005, name: Casey Nakamura, type: Person, value: { name: Casey Nakamura, role: Process Operator, shift: A } }
+      - { id: e-1006, name: Morgan Patel,   type: Person, value: { name: Morgan Patel,   role: Maintenance,      shift: Days } }
+      - { id: e-1007, name: Taylor Brooks,  type: Person, value: { name: Taylor Brooks,  role: QA,               shift: Days } }
+  - id: materials
+    name: Materials
+    type: Group
+    assets:
+      - { id: sug-2611-07,  name: Sugar SUG-2611-07,        type: MaterialLot, tag: Lot/SUG-2611-07,  tags: { material: { const: Granulated Sugar }, category: { const: ingredient }, unit: { const: kg } } }
+      - { id: cnc-2611-02,  name: Concentrate CNC-2611-02,  type: MaterialLot, tag: Lot/CNC-2611-02,  tags: { material: { const: Cola Concentrate K-7 }, category: { const: ingredient }, unit: { const: kg } } }
+      - { id: co2-2611-01,  name: CO2 CO2-2611-01,          type: MaterialLot, tag: Lot/CO2-2611-01,  tags: { material: { const: CO2 }, category: { const: ingredient }, unit: { const: t } } }
+      - { id: syr-2611-16,  name: Final Syrup SYR-2611-16,  type: MaterialLot, tag: Lot/SYR-2611-16,  tags: { material: { const: Cola Final Syrup }, category: { const: wip }, unit: { const: m3 } } }
+      - { id: pet-2611-11,  name: Bottles PET-2611-11,      type: MaterialLot, tag: Lot/PET-2611-11,  tags: { material: { const: PET Bottle 500 mL }, category: { const: packaging }, unit: { const: pcs } } }
+      - { id: cap-2611-05,  name: Caps CAP-2611-05,         type: MaterialLot, tag: Lot/CAP-2611-05,  tags: { material: { const: Cap 28 mm }, category: { const: packaging }, unit: { const: pcs } } }
+      - { id: lbl-2611-03,  name: Labels LBL-2611-03,       type: MaterialLot, tag: Lot/LBL-2611-03,  tags: { material: { const: Label Cola 500 }, category: { const: packaging }, unit: { const: pcs } } }
+      - { id: cse-2611-09,  name: Trays CSE-2611-09,        type: MaterialLot, tag: Lot/CSE-2611-09,  tags: { material: { const: Shrink Tray 24 }, category: { const: packaging }, unit: { const: pcs } } }
+      - { id: plt-2611-02,  name: Pallets PLT-2611-02,      type: MaterialLot, tag: Lot/PLT-2611-02,  tags: { material: { const: EUR Pallet }, category: { const: packaging }, unit: { const: pcs } } }
+      - { id: fg-2611-0042, name: Cola 500 FG-2611-0042,    type: MaterialLot, tag: Lot/FG-2611-0042, tags: { material: { const: Cola 500 mL }, category: { const: finished }, unit: { const: bottles } } }
+      - { id: fg-2611-0043, name: Cola 500 FG-2611-0043,    type: MaterialLot, tag: Lot/FG-2611-0043, tags: { material: { const: Cola 500 mL }, category: { const: finished }, unit: { const: bottles } } }
+  - id: orders
+    name: Orders
+    type: Group
+    assets:
+      - id: wr-2611-0042
+        name: Order WR-2611-0042
+        type: WorkOrder
+        tag: Orders/WR-2611-0042
+        tags: { product: { const: Cola 500 mL PET } }
+        children:
+          - { id: jo-0042-10, name: Syrup JO-0042-10,   type: Job, tag: Orders/WR-2611-0042/JO-0042-10, tags: { step: { const: syrup }, unit: { const: m3 } } }
+          - { id: jo-0042-20, name: Blend JO-0042-20,   type: Job, tag: Orders/WR-2611-0042/JO-0042-20, tags: { step: { const: blend }, unit: { const: m3 } } }
+          - { id: jo-0042-30, name: Bottle JO-0042-30,  type: Job, tag: Orders/WR-2611-0042/JO-0042-30, tags: { step: { const: bottle }, unit: { const: bottles } } }
+      - id: wr-2611-0043
+        name: Order WR-2611-0043
+        type: WorkOrder
+        tag: Orders/WR-2611-0043
+        tags: { product: { const: Cola 500 mL PET } }
+        children:
+          - { id: jo-0043-10, name: Syrup JO-0043-10,   type: Job, tag: Orders/WR-2611-0043/JO-0043-10, tags: { step: { const: syrup }, unit: { const: m3 } } }
+          - { id: jo-0043-20, name: Blend JO-0043-20,   type: Job, tag: Orders/WR-2611-0043/JO-0043-20, tags: { step: { const: blend }, unit: { const: m3 } } }
+          - { id: jo-0043-30, name: Bottle JO-0043-30,  type: Job, tag: Orders/WR-2611-0043/JO-0043-30, tags: { step: { const: bottle }, unit: { const: bottles } } }
+
 # Graph relationships, asset to asset (ids are the asset ids above).
 feeds:
   - [raw-water-tank, raw-water-pump]
@@ -286,3 +410,16 @@ supplies:
   - [compressed-air, labeler]
   - [compressed-air, case-packer]
   - [compressed-air, palletizer]
+
+# Added 2026-11-16: hand-named links between people, materials, orders and the plant (ids above; areas/lines
+# by their area id). The names are the integrator's own, not ISA-95's.
+links:
+  Operates:   { reverse: OperatedBy, pairs: [[e-1002, filler], [e-1002, capper], [e-1002, labeler], [e-1003, case-packer], [e-1003, palletizer],
+                [e-1004, sugar-dissolver], [e-1004, simple-syrup-tank], [e-1004, final-syrup-tank],
+                [e-1005, ro-unit], [e-1005, deaerator], [e-1005, blender], [e-1005, carbonator]] }
+  Consumes:   { reverse: ConsumedBy, pairs: [[sugar-dissolver, sug-2611-07], [final-syrup-tank, cnc-2611-02], [carbonator, co2-2611-01], [blender, syr-2611-16],
+                [filler, pet-2611-11], [capper, cap-2611-05], [labeler, lbl-2611-03], [case-packer, cse-2611-09], [palletizer, plt-2611-02]] }
+  Produces:   { reverse: ProducedBy, pairs: [[final-syrup-tank, syr-2611-16], [line1, fg-2611-0042], [line1, fg-2611-0043]] }
+  StoredIn:   { reverse: Stores,     pairs: [[co2-2611-01, co2-tank], [syr-2611-16, final-syrup-tank]] }
+  RunsOn:     { reverse: Runs,       pairs: [[jo-0042-10, syrup-room], [jo-0042-20, blending], [jo-0042-30, line1],
+                                             [jo-0043-10, syrup-room], [jo-0043-20, blending], [jo-0043-30, line1]] }

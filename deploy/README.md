@@ -2,9 +2,7 @@
 
 `deploy/i3x-on-opc.service` runs what `./start.sh` runs on a laptop: the OPC UA plant simulation, the three i3X gateways (cesmii, i3x2ua, uns) and the front door. It starts at boot, restarts on failure, and runs **read-only**.
 
-> **Status (2026-11-06): ready, not deployed yet.** Settle these first:
-> 1. **Where the code comes from.** The repo has no remote yet. Until it has one, use the `git bundle` route in step 2.
-> 2. **Licensing, before any *public* push.** Every commit includes OPC Foundation spec PDFs (`docs/machinery/`, `docs/opcua/`) and PMMI files (`docs/pmmi/`). A private repo for people entitled to them is fine. A public one needs those files removed from the whole history first.
+> **Status (2026-11-16): ready, first deployment in progress.** The repo is prepared for publication: OPC Foundation spec documents and PMMI files are no longer tracked (`.gitignore`; each `docs/` folder's README says where to get them). The OPC Foundation NodeSets in `nodesets/standard/` are MIT-licensed and stay.
 >
 > The unit was written for and checked against the launcher's behaviour on macOS. **It has not been run under systemd yet**, so watch the first start (step 6).
 
@@ -12,7 +10,7 @@
 
 | Port | What | Open in the firewall? |
 |---|---|---|
-| **8080** (set `FRONT_DOOR_PORT` in the unit to change it) | **Front door:** `/cesmii/v1`, `/i3x2ua/v1`, `/uns/v1`; `/v1` → the active gateway; `/` → JSON status | **Yes.** This is the only URL to give the WG. |
+| **8084** (set `FRONT_DOOR_PORT` in the unit to change it) | **Front door:** `/cesmii/v1`, `/i3x2ua/v1`, `/uns/v1`; `/v1` → the active gateway; `/` → JSON status | **Yes.** This is the only URL to give the WG. |
 | 4840 | OPC UA plant `opc.tcp://<host>:4840/UA/BeverageFactory`, for UaExpert | Only if people need UaExpert (it's writable; see below) |
 | 8081, 8083 | cesmii and uns directly (they listen on all interfaces) | **No.** Same content as through the front door |
 | 8082 | i3x2ua container (published on 127.0.0.1 only) | Not reachable from outside |
@@ -69,9 +67,9 @@ sudo -u i3x npm ci                          # exact pinned versions from package
 sudo -u i3x cp .env.example .env            # simulation settings; the defaults are fine
 ```
 
-The plant NodeSet (`nodesets/factory/BeverageFactory.NodeSet2.xml`) is committed. If it's missing, run `sudo -u i3x npm run generate -w factory`.
+The plant NodeSets (`nodesets/factory/BeverageFactory.NodeSet2.xml` and `ISA95Operations.NodeSet2.xml`) are committed. If either is missing, run `sudo -u i3x npm run generate -w factory`.
 
-Optional smoke test before systemd: `sudo -u i3x ./start.sh`, wait for `front door http://localhost:8080/v1`, then Ctrl-C.
+Optional smoke test before systemd: `sudo -u i3x ./start.sh`, wait for `front door http://localhost:8084/v1`, then Ctrl-C.
 
 ## 4. Install the unit
 
@@ -87,7 +85,7 @@ Edit `/etc/systemd/system/i3x-on-opc.service`:
 | `User=` | the service user (`i3x`) |
 | `WorkingDirectory=` | the checkout (`/opt/i3x-on-OPC`) |
 | `Environment=PATH=` | the directory holding `node` first, e.g. `/home/i3x/.nvm/versions/node/v24.x/bin:/usr/local/bin:/usr/bin:/bin`. systemd doesn't read nvm or `.bashrc`. |
-| `Environment=FRONT_DOOR_PORT=` | `8080`, or a free port if 8080 is taken (`ss -ltnp | grep :8080`) |
+| `Environment=FRONT_DOOR_PORT=` | `8084`, or a free port if 8084 is taken (`ss -ltnp | grep :8084`) |
 
 Write each setting on its own line: systemd unit files don't support comments after a value.
 
@@ -95,10 +93,10 @@ Write each setting on its own line: systemd unit files don't support comments af
 
 ## 5. Firewall
 
-Using ufw (replace 8080 if you changed `FRONT_DOOR_PORT`):
+Using ufw (replace 8084 if you changed `FRONT_DOOR_PORT`):
 
 ```sh
-ufw allow 8080/tcp
+ufw allow 8084/tcp
 ufw allow in on docker0 to any port 4840 proto tcp    # required: lets the i3x2ua container reach the plant on the host
 # ufw allow 4840/tcp                                  # only if people need UaExpert (writable, see §1)
 ```
@@ -121,11 +119,11 @@ Expect something like the following within a minute or two (the first start pull
 [compare] cesmii: ready in 3.0 s → http://localhost:8081/v1
 [compare] i3x2ua: ready in 10.1 s → http://localhost:8082/v1
 [compare] uns: ready in 2.0 s → http://localhost:8083/v1
-[compare] front door http://localhost:8080/v1 → active "cesmii" …
+[compare] front door http://localhost:8084/v1 → active "cesmii" …
 [compare] read-only (COMPARE_READ_ONLY): PUT/DELETE/PATCH and /_switch are refused
 ```
 
-Then, from **another machine** (`H=http://<server>:8080`):
+Then, from **another machine** (`H=http://<server>:8084`):
 
 ```sh
 curl -s $H/ | head -20                                   # status: all three gateways "ready in …"
@@ -136,9 +134,9 @@ curl -s -o /dev/null -w '%{http_code}\n' $H/_switch/uns  # → 403
 curl -s --max-time 3 http://<server>:8081/v1/info || echo "8081 closed (good)"
 ```
 
-In **i3X Explorer**, add `http://<server>:8080/cesmii/v1`, `…/i3x2ua/v1` and `…/uns/v1`. `docs/WALKTHROUGH.md` is the guided tour.
+In **i3X Explorer**, add `http://<server>:8084/cesmii/v1`, `…/i3x2ua/v1` and `…/uns/v1`. `docs/WALKTHROUGH.md` is the guided tour.
 
-Optional, from a machine with the conformance suite: `node bin/i3x-test.js run http://<server>:8080/cesmii/v1`.
+Optional, from a machine with the conformance suite: `node bin/i3x-test.js run http://<server>:8084/cesmii/v1`.
 
 ## 7. Operate
 
@@ -157,11 +155,11 @@ Optional, from a machine with the conformance suite: `node bin/i3x-test.js run h
 
 | Symptom | Likely cause |
 |---|---|
-| `front door port :8080 is already in use` | Something else holds the port: set `FRONT_DOOR_PORT` (§4) |
+| `front door port :8084 is already in use` | Something else holds the port: set `FRONT_DOOR_PORT` (§4) |
 | `node: command not found` / exit 127 | `PATH=` in the unit doesn't include node's directory |
 | i3x2ua `docker run failed` / `permission denied … docker.sock` | The user isn't in the `docker` group (re-login doesn't apply to services: `systemctl restart`) or Docker isn't running |
 | i3x2ua times out after 240 s | Missing `docker0` firewall rule (§5), or the image pull is blocked |
-| Explorer can't connect | The 8080 firewall rule, or a cloud provider's security group in front of the host |
+| Explorer can't connect | The 8084 firewall rule, or a cloud provider's security group in front of the host |
 | SSE subscriptions stall behind a proxy | The proxy buffers: in Nginx set `proxy_buffering off` for `/…/subscriptions/stream` |
 
-**Nginx later (D8: TLS and auth).** Proxy `443 → http://127.0.0.1:8080`, turn buffering off for the stream endpoints, add authentication (`/info` should stay open), then remove the 8080 firewall rule.
+**Nginx later (D8: TLS and auth).** Proxy `443 → http://127.0.0.1:8084`, turn buffering off for the stream endpoints, add authentication (`/info` should stay open), then remove the 8084 firewall rule.

@@ -6,6 +6,7 @@
  * - { state }: a FiniteStateMachine's CurrentState (+ Id, + Number when present). An empty state
  *   marks an inactive PackML sub-state machine: written as Bad_StateNotActive (OPC 10000-16).
  * - { packmlCount } / { packmlAlarm }: PackML structures as ExtensionObjects.
+ * - Date → DateTime; null → an empty value with Good status (i3X shows it as GoodNoData).
  * Quality overrides (scenario layer): Bad codes replace the value with null; Uncertain codes keep the
  * (last usable) value and only change the StatusCode.
  */
@@ -53,7 +54,7 @@ export class UaBinder {
       const b = this.bound(key);
       if (!b) continue;
       const q = quality(key);
-      if (typeof value === "object" && "state" in value) this.writeState(b, value.state, ts, q);
+      if (value !== null && typeof value === "object" && "state" in value) this.writeState(b, value.state, ts, q);
       else this.writeValue(b, b.node as UAVariable, value, ts, q);
     }
   }
@@ -63,6 +64,10 @@ export class UaBinder {
     let variant: Variant;
     if (q && q !== StatusCodes.Good && !q.name.startsWith("Uncertain")) {
       variant = new Variant({ dataType: DataType.Null });       // Bad: no value
+    } else if (value === null) {
+      variant = new Variant({ dataType: DataType.Null });       // not set yet (e.g. a job order's EndTime)
+    } else if (value instanceof Date) {
+      variant = new Variant({ dataType: DataType.DateTime, value });
     } else if (typeof value === "object" && "packmlCount" in value) {
       const dt = v.dataType;
       const items = value.packmlCount.map((c) => this.as.constructExtensionObject(dt, { ID: c.id, name: c.name, unit: PIECE, count: c.count, accCount: c.acc }));
