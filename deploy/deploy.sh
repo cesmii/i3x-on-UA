@@ -43,8 +43,11 @@ fi
 echo "$STAMP Deploying ${HEAD:0:7}${BASE:+ (was ${BASE:0:7})}."
 [ -f .env ] || cp .env.example .env
 if [ ! -d node_modules ] || [ -z "$BASE" ] || grep -q '^package-lock\.json$' <<< "$CHANGED"; then
+    # cron's PATH may not have npm (nvm installs): use the npm that sits next to the resolved node
+    NPM=$(command -v npm 2>/dev/null || true)
+    if [ -z "$NPM" ]; then NODE=$(command -v node) && NPM="$(dirname "$(readlink -f "$NODE")")/npm"; fi
     echo "$STAMP npm ci…"
-    npm ci --no-audit --no-fund --loglevel=error
+    PATH="$(dirname "$(readlink -f "$(command -v node)")"):$PATH" "$NPM" ci --no-audit --no-fund --loglevel=error
 fi
 
 sudo -n systemctl restart "$UNIT"
