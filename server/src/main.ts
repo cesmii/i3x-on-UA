@@ -45,7 +45,7 @@ const plant = loadPlant(path.join(ROOT, "factory/plant/line1.yaml"));
 const serverCertificateManager = new OPCUACertificateManager({ rootFolder: path.join(ROOT, "server/pki"), automaticallyAcceptUnknownCertificate: true });
 const server = new OPCUAServer({
   port: PORT,
-  ...(HOSTNAME ? { hostname: HOSTNAME, alternateHostname: ["localhost"] } : {}),
+  ...(HOSTNAME ? { hostname: HOSTNAME, alternateHostname: [HOSTNAME, "localhost"] } : {}),
   maxConnectionsPerEndpoint: MAX_SESSIONS,
   serverCapabilities: { maxSessions: MAX_SESSIONS },
   resourcePath: "/UA/BeverageFactory",

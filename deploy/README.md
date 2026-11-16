@@ -61,7 +61,7 @@ i3x2ua runs with writes off (its default), and uns has no writes. Nginx sends CO
 - **Hostname.** OPC UA can't go through Cloudflare's proxy, so the endpoint uses the VM's Azure DNS name. `OPCUA_HOSTNAME` in the unit makes the plant advertise it: by default it would advertise `cesmii-router2.internal.cloudapp.net`, which only resolves inside Azure, and clients that follow the endpoint list would fail. `localhost` stays advertised for the local i3X servers.
 - **Session cap.** `OPCUA_MAX_SESSIONS=20` limits sessions and connections, so outside clients can't exhaust the server. The three i3X servers hold a few of them; if the cap is ever reached, a gateway that reconnects could be locked out until a client leaves.
 - **Writable.** It isn't read-only: as in Machinery, `Identification/AssetId`, `ComponentName` and `Location` are writable, and a change shows in all three i3X servers until the next restart. The simulation overwrites process values every second anyway.
-- **Certificate.** The self-signed server certificate (`server/pki/own/`) is created on first start with the hostnames advertised then. To get one that names the public hostname, move `server/pki/own/certs/certificate.pem` and `server/pki/own/private/private_key.pem` aside and restart.
+- **Certificate.** The self-signed server certificate (`server/pki/own/`) is created on first start, naming this machine, `localhost` and `OPCUA_HOSTNAME`. To get one that names the public hostname, move `server/pki/own/certs/certificate.pem` and `server/pki/own/private/private_key.pem` aside and restart.
 
 Opening it (done 2026-11-16): an Azure NSG inbound rule for TCP 4840 on the VM, and `sudo ufw allow 4840/tcp comment 'i3x-on-UA: public OPC UA plant'`.
 
