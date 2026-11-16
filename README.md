@@ -10,6 +10,8 @@ A virtual beverage plant modelled in OPC UA with the standard companion specific
 | **i3x2ua** | `https://opcua.i3x.dev/i3x2ua/v1` | Andreas Heine's independent [OPC UA → i3X gateway](https://github.com/AndreasHeine/i3x2ua), run unmodified with its own defaults. |
 | **UNS** | `https://opcua.i3x.dev/uns/v1` | A naive, hand-authored "UNS-style" model that polls tags from the plant and ignores OPC UA types. |
 
+The plant itself is open to any OPC UA client (UaExpert etc.) at `opc.tcp://cesmiirouter.eastus2.cloudapp.azure.com:4840/UA/BeverageFactory`: anonymous, security None.
+
 All three pass the [i3X conformance suite](https://conformance.i3x.dev), yet they disagree on roots, object granularity, composition, types, identity and quality. [`docs/gateway/COMPARISON.md`](docs/gateway/COMPARISON.md) lists the differences.
 
 ## What's in the plant

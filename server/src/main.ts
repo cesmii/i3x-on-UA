@@ -4,14 +4,19 @@
  *
  * Environment:
  *   OPCUA_PORT      (4840)
+ *   OPCUA_HOSTNAME  hostname advertised in the endpoint URLs (default: this machine's FQDN). Set it when
+ *                   clients connect from outside under a public name; "localhost" stays advertised too,
+ *                   so the local i3X servers still find a matching endpoint.
+ *   OPCUA_MAX_SESSIONS  simultaneous sessions, and connections per endpoint (20). The three i3X
+ *                   servers use a few of them.
  *   SIM_SPEED       simulated seconds per wall-clock second (1)
  *   SIM_SEED        PRNG seed (42)
  *   SIM_HISTORY     in-memory history depth per variable, in values (3600; 0 = off)
  *   SIM_FAULTS      quality overrides, e.g. "PT-902=BadNotConnected,FL-401/Status=UncertainLastUsableValue"
  *                   (key prefix = NodeId path; code = node-opcua StatusCodes name). Line 1 default: none.
  *
- * Local development: anonymous access and SecurityMode None are allowed; production sits behind
- * the deployment's own network controls (the i3X side is fronted by Nginx, decision D8).
+ * Anonymous access and SecurityMode None are allowed, and the Identification AssetId/ComponentName/
+ * Location properties are writable (Machinery RW), also in the public deployment (deploy/README.md).
  */
 import path from "node:path";
 import { MessageSecurityMode, OPCUACertificateManager, OPCUAServer, SecurityPolicy, StatusCodes, type StatusCode } from "node-opcua";
@@ -26,6 +31,8 @@ const PORT = Number(process.env.OPCUA_PORT ?? 4840);
 const SPEED = Math.max(1, Math.floor(Number(process.env.SIM_SPEED ?? 1)));
 const SEED = Number(process.env.SIM_SEED ?? 42);
 const HISTORY = Number(process.env.SIM_HISTORY ?? 3600);
+const HOSTNAME = process.env.OPCUA_HOSTNAME || undefined;
+const MAX_SESSIONS = Math.max(5, Math.floor(Number(process.env.OPCUA_MAX_SESSIONS ?? 20)));
 
 const faults: Array<[string, StatusCode]> = (process.env.SIM_FAULTS ?? "").split(",").filter(Boolean).map((f) => {
   const [prefix, code] = f.split("=");
@@ -38,6 +45,9 @@ const plant = loadPlant(path.join(ROOT, "factory/plant/line1.yaml"));
 const serverCertificateManager = new OPCUACertificateManager({ rootFolder: path.join(ROOT, "server/pki"), automaticallyAcceptUnknownCertificate: true });
 const server = new OPCUAServer({
   port: PORT,
+  ...(HOSTNAME ? { hostname: HOSTNAME, alternateHostname: ["localhost"] } : {}),
+  maxConnectionsPerEndpoint: MAX_SESSIONS,
+  serverCapabilities: { maxSessions: MAX_SESSIONS },
   resourcePath: "/UA/BeverageFactory",
   nodesets: [...BASE_NODESETS, ...FACTORY_NODESETS],
   serverCertificateManager,

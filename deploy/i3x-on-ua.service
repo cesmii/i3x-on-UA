@@ -1,4 +1,4 @@
-# systemd unit: the whole i3X-over-OPC-UA demo (plant + cesmii + i3x2ua + uns + front door :8084), read-only.
+# systemd unit: the whole i3X-over-OPC-UA demo (plant + cesmii + i3x2ua + uns + front door :8084), i3X read-only.
 # Production: admin.cesmii.net, served as https://opcua.i3x.dev (Cloudflare → Nginx → 127.0.0.1:8084).
 # Install and update flow: deploy/README.md. deploy/deploy.sh (cron) restarts it when a new commit lands.
 
@@ -24,6 +24,10 @@ Environment=COMPARE_PORT_CESMII=8085
 # Public demo: refuse writes everywhere (front door) and in our gateway (also /info capabilities.update.current=false)
 Environment=COMPARE_READ_ONLY=1
 Environment=GATEWAY_READ_ONLY=1
+# OPC UA plant, public on 4840 (ufw + Azure NSG): advertise the VM's Azure DNS name, not the internal
+# cloudapp.net one; cap sessions so outside clients can't crowd out the three i3X servers.
+Environment=OPCUA_HOSTNAME=cesmiirouter.eastus2.cloudapp.azure.com
+Environment=OPCUA_MAX_SESSIONS=20
 # .env has inline comments, which systemd's EnvironmentFile would keep as part of the values, so source it with bash.
 # `exec` keeps the launcher as the main PID, so systemd's stop signal reaches it.
 ExecStart=/bin/bash -c 'set -a; [ -f .env ] && . ./.env; set +a; exec node --import tsx compare/src/launch.ts up'

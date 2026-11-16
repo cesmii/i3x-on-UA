@@ -5,8 +5,9 @@
 #   */3 * * * * /var/www/apps/i3x-on-UA/deploy/deploy.sh
 # Prints nothing when there's nothing to do, so cron mails only real deploys and errors.
 #
-# Restart rule: any change outside Markdown files restarts the service (code, config, NodeSets,
-# plant YAML, lockfile). A restart resets the simulation and drops i3X subscriptions, so
+# Restart rule: any change outside documentation restarts the service (code, config, NodeSets,
+# plant YAML, lockfile). Documentation = *.md, *.mmd, LICENSE, and anything under docs/ (nothing
+# reads docs/ at runtime). A restart resets the simulation and drops i3X and OPC UA sessions, so
 # documentation-only commits don't trigger one.
 
 set -euo pipefail
@@ -34,7 +35,7 @@ BASE=""
 if [ -n "$DEPLOYED" ] && git cat-file -e "${DEPLOYED}^{commit}" 2>/dev/null; then BASE="$DEPLOYED"; fi
 CHANGED=$( [ -n "$BASE" ] && git diff --name-only "$BASE" "$HEAD" || echo "(first deploy)" )
 
-if [ -n "$BASE" ] && systemctl is-active --quiet "$UNIT" && ! grep -qv '\.md$' <<< "$CHANGED"; then
+if [ -n "$BASE" ] && systemctl is-active --quiet "$UNIT" && ! grep -qvE '\.(md|mmd)$|^docs/|^LICENSE$' <<< "$CHANGED"; then
     echo "$HEAD" > "$STAMP_FILE"
     echo "$STAMP ${BASE:0:7} → ${HEAD:0:7}: documentation only, no restart."
     exit 0

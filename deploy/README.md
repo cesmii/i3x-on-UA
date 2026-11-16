@@ -1,6 +1,6 @@
 # Deployment: https://opcua.i3x.dev
 
-The public demo runs on the CESMII server `admin.cesmii.net` (Ubuntu 22.04) as one systemd unit, `i3x-on-ua`. It runs what `./start.sh` runs on a laptop: the OPC UA plant simulation, the three i3X servers (cesmii, i3x2ua, uns) and the front door. It is **read-only**.
+The public demo runs on the CESMII server `admin.cesmii.net` (Ubuntu 22.04) as one systemd unit, `i3x-on-ua`. It runs what `./start.sh` runs on a laptop: the OPC UA plant simulation, the three i3X servers (cesmii, i3x2ua, uns) and the front door. The i3X side is **read-only**. The OPC UA plant is also open to UA clients at `opc.tcp://cesmiirouter.eastus2.cloudapp.azure.com:4840/UA/BeverageFactory`.
 
 ```
 Internet ──https──> Cloudflare ──https──> Nginx :443 (opcua.i3x.dev) ──> front door 127.0.0.1:8084
@@ -9,6 +9,8 @@ Internet ──https──> Cloudflare ──https──> Nginx :443 (opcua.i3x.
                                                                           ├─ /uns/v1     → uns :8083
                                                                           └─ /v1         → the active one (compare/gateways.yaml)
                                        all three read the plant: opc.tcp://localhost:4840/UA/BeverageFactory
+
+UA clients ──opc.tcp──> cesmiirouter.eastus2.cloudapp.azure.com:4840 (Azure NSG + ufw; not via Cloudflare) ──> plant
 ```
 
 | File | Installed as |
@@ -26,13 +28,13 @@ The checkout is `/var/www/apps/i3x-on-UA` (`~/apps` links to `/var/www/apps`), c
   - creates `.env` from `.env.example` if it's missing;
   - runs `sudo systemctl restart i3x-on-ua`.
 
-  Commits that only touch Markdown don't restart (a restart resets the simulation and drops i3X subscriptions). The script prints nothing when there's nothing to do, so cron mails only real deploys and errors.
+  Documentation-only commits don't restart: `*.md`, `*.mmd`, `LICENSE` and anything under `docs/`. A restart resets the simulation and drops i3X subscriptions and OPC UA sessions. The script prints nothing when there's nothing to do, so cron mails only real deploys and errors.
 
 So: **push to `main`, and the demo restarts on the new commit within about 3 minutes.**
 
 ## Ports on this host
 
-8080 and 8081 are used by the i3X demo servers (`api.i3x.dev`), so our gateway runs on **8085** (`COMPARE_PORT_CESMII` in the unit). ufw only admits 80/443 from Cloudflare plus SSH, so none of these is reachable from outside.
+8080 and 8081 are used by the i3X demo servers (`api.i3x.dev`), so our gateway runs on **8085** (`COMPARE_PORT_CESMII` in the unit). ufw admits 80/443 from Cloudflare, SSH, and 4840 (OPC UA) from anywhere; the i3X ports aren't reachable from outside.
 
 | Port | What | Listens on |
 |---|---|---|
@@ -40,7 +42,7 @@ So: **push to `main`, and the demo restarts on the new commit within about 3 min
 | 8085 | cesmii gateway | all interfaces, firewalled |
 | 8082 | i3x2ua container | 127.0.0.1 |
 | 8083 | uns | all interfaces, firewalled |
-| 4840 | OPC UA plant | all interfaces, firewalled; the `docker0` rule below lets the i3x2ua container in |
+| 4840 | OPC UA plant | all interfaces, **public** (ufw + Azure NSG rule); the `docker0` rule lets the i3x2ua container in |
 
 ## Read-only, and what isn't covered
 
@@ -50,7 +52,18 @@ The unit sets:
 
 i3x2ua runs with writes off (its default), and uns has no writes. Nginx sends CORS headers for `GET, POST, OPTIONS` only.
 
-**Not covered:** authentication. i3X is open to anyone who reaches Cloudflare. The OPC UA server isn't exposed at all.
+**Not covered:** authentication. i3X is open to anyone who reaches Cloudflare.
+
+## The public OPC UA endpoint
+
+`opc.tcp://cesmiirouter.eastus2.cloudapp.azure.com:4840/UA/BeverageFactory`, anonymous, security None (Sign/SignAndEncrypt with Basic256Sha256 also offered; client certificates are auto-accepted).
+
+- **Hostname.** OPC UA can't go through Cloudflare's proxy, so the endpoint uses the VM's Azure DNS name. `OPCUA_HOSTNAME` in the unit makes the plant advertise it: by default it would advertise `cesmii-router2.internal.cloudapp.net`, which only resolves inside Azure, and clients that follow the endpoint list would fail. `localhost` stays advertised for the local i3X servers.
+- **Session cap.** `OPCUA_MAX_SESSIONS=20` limits sessions and connections, so outside clients can't exhaust the server. The three i3X servers hold a few of them; if the cap is ever reached, a gateway that reconnects could be locked out until a client leaves.
+- **Writable.** It isn't read-only: as in Machinery, `Identification/AssetId`, `ComponentName` and `Location` are writable, and a change shows in all three i3X servers until the next restart. The simulation overwrites process values every second anyway.
+- **Certificate.** The self-signed server certificate (`server/pki/own/`) is created on first start with the hostnames advertised then. To get one that names the public hostname, move `server/pki/own/certs/certificate.pem` and `server/pki/own/private/private_key.pem` aside and restart.
+
+Opening it (done 2026-11-16): an Azure NSG inbound rule for TCP 4840 on the VM, and `sudo ufw allow 4840/tcp comment 'i3x-on-UA: public OPC UA plant'`.
 
 ## First-time install (done 2026-11-16)
 
@@ -103,7 +116,7 @@ In **i3X Explorer** (desktop, or https://explorer.i3x.dev), add `https://opcua.i
 | Change the server behind `/v1` | edit `active:` in `compare/gateways.yaml` and push (`/_switch` is disabled) |
 | Simulation settings | `.env` on the server (`SIM_SPEED`, `SIM_SEED`, `SIM_HISTORY`, `SIM_FAULTS`), then restart |
 | Unit changed in git | `sudo cp deploy/i3x-on-ua.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl restart i3x-on-ua` (deploy.sh doesn't re-install the unit) |
-| Uninstall | remove the cron line; `sudo systemctl disable --now i3x-on-ua`; delete the unit, the Nginx site and symlink (reload Nginx), and the `docker0` ufw rule |
+| Uninstall | remove the cron line; `sudo systemctl disable --now i3x-on-ua`; delete the unit, the Nginx site and symlink (reload Nginx), both 4840 ufw rules, and the Azure NSG 4840 rule |
 
 ## Troubleshooting
 
@@ -114,4 +127,6 @@ In **i3X Explorer** (desktop, or https://explorer.i3x.dev), add `https://opcua.i
 | i3x2ua times out after 240 s | The `docker0` → 4840 ufw rule is missing, or the image pull (ghcr.io) is blocked |
 | 444 / connection closed on opcua.i3x.dev | The request didn't come through Cloudflare (`$from_cloudflare`), or the DNS record isn't proxied |
 | SSE subscriptions stall | Proxy buffering: the Nginx site sets `proxy_buffering off`; check Cloudflare isn't caching the path |
+| UaExpert: "BadTcpEndpointUrlInvalid" or it connects to `…internal.cloudapp.net` | The unit wasn't re-installed after `OPCUA_HOSTNAME` was added (`systemctl show i3x-on-ua -p Environment`) |
+| UA client times out on 4840 | The Azure NSG rule or `ufw allow 4840/tcp` is missing (`sudo ufw status`) |
 | Push didn't deploy | `deploy.sh` by hand shows why: a failed `git pull` (local changes in the checkout?) or `sudo -n` refused |
