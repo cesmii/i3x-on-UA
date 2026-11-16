@@ -14,7 +14,7 @@ Internet ──https──> Cloudflare ──https──> Nginx :443 (opcua.i3x.
 | File | Installed as |
 |---|---|
 | `deploy/i3x-on-ua.service` | `/etc/systemd/system/i3x-on-ua.service` |
-| `deploy/nginx-opcua.i3x.dev.conf` | `/etc/nginx/sites-available/opcua` (+ symlink in `sites-enabled`) |
+| `deploy/nginx-opcua.i3x.dev.conf` | `/etc/nginx/sites-available/i3x-on-opcua` (+ symlink in `sites-enabled`) |
 | `deploy/deploy.sh` | run by cron from the checkout |
 
 ## How updates reach the server
@@ -68,8 +68,8 @@ git rev-parse HEAD > .last-deploy
 sudo ufw allow in on docker0 to any port 4840 proto tcp comment 'i3x-on-UA: i3x2ua container -> OPC UA plant'
 
 # web
-sudo cp deploy/nginx-opcua.i3x.dev.conf /etc/nginx/sites-available/opcua
-sudo ln -s ../sites-available/opcua /etc/nginx/sites-enabled/opcua
+sudo cp deploy/nginx-opcua.i3x.dev.conf /etc/nginx/sites-available/i3x-on-opcua
+sudo ln -s /etc/nginx/sites-available/i3x-on-opcua /etc/nginx/sites-enabled/i3x-on-opcua
 sudo nginx -t && sudo systemctl reload nginx
 
 # updates
